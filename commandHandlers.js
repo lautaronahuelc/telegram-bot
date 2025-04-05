@@ -48,7 +48,7 @@ export async function onList(msg) {
   }
 }
 
-export async function onReset(msg) {
+export async function onDeleteAll(msg) {
   const chatId = msg.chat.id;
   const user = msg.from.username;
 
@@ -61,7 +61,7 @@ export async function onReset(msg) {
   }
 }
 
-export async function onTotal(msg) {
+export async function onSum(msg) {
   const chatId = msg.chat.id;
   
   try {
@@ -102,9 +102,9 @@ Ejemplo: "\/add 1000 verdulería"
 
 \/list\: _Muestra los gastos ingresados por usuario._
 
-\/total\: _Muestra el gasto total por usuario._
+\/sum\: _Muestra el gasto total por usuario._
 
-\/reset\: _Limpia el registro completo._
+\/deleteall\: _Limpia el registro completo._
 
 \/help\: _Ver esta ayuda_
   `;
