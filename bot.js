@@ -103,3 +103,24 @@ bot.onText(/\/list/, (msg) => {
 
   bot.sendMessage(chatId, response);
 });
+
+bot.onText(/\/help/, (msg) => {
+  const chatId = msg.chat.id;
+
+  const helpMessage = `
+Usá estos comandos para llevar el control:
+
+\/add\: _Registra un gasto._
+Ejemplo: "\/add 1000 verdulería"
+
+\/list\: _Muestra los gastos ingresados por cada persona._
+
+\/total\: _Muestra cuánto gastó cada uno en total._
+
+\/reset\: _Limpia el registro completo._
+
+\/help\: _Ver esta ayuda_
+`;
+
+  bot.sendMessage(chatId, helpMessage, { parse_mode: 'Markdown' });
+});
