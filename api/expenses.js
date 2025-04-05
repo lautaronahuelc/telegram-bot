@@ -14,11 +14,16 @@ async function insertExpense(user, amount, desc) {
   await newExpense.save();
 }
 
+async function deleteExpense(id) {
+  return await Expenses.findByIdAndDelete(id);
+}
+
 async function deleteAllExpenses() {
   await Expenses.deleteMany({});
 }
 
 const MongoDB = {
+  deleteExpense,
   deleteAllExpenses,
   insertExpense,
   loadExpenses,
