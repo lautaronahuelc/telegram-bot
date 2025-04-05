@@ -1,19 +1,44 @@
 import MongoDB from "./api/expenses.js";
 import { bot } from "./bot.js";
 
+const waitingForExpense = new Map();
+
 export async function onAdd(msg, match) {
   const chatId = msg.chat.id;
-  const amount = parseInt(match[1]);
-  const desc = match[2]?.trim();
+  const userId = msg.from.id;
+
+  waitingForExpense.set(userId, true);
+
+  bot.sendMessage(chatId, 'Ingresa monto y descripción del gasto.\nEjemplo: "100 supermercado"');
+}
+
+export async function onMessage(msg) {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
   const user = msg.from.username;
 
-  try {
-    await MongoDB.insertExpense(user, amount, desc);
-    bot.sendMessage(chatId, `@${user} agregó $${amount} por "${desc}"`);
+ if (!waitingForExpense.get(userId)) return;
+
+ const regex = /^(\d+)\s+(.+)/;
+ const match = msg.text.match(regex);
+
+ if (!match) {
+   bot.sendMessage(chatId, 'Formato inválido. No olvides ingresar monto y descripción.');
+   return;
+ }
+
+ const amount = parseInt(match[1]);
+ const desc = match[2];
+
+ try {
+  await MongoDB.insertExpense(user, amount, desc);
+  bot.sendMessage(chatId, `@${user} agregó $${amount} por "${desc}"`);
   } catch (err) {
     console.error('❌ An error occurred while adding expense:', err);
     bot.sendMessage(chatId, 'Ocurrió un error al agregar el gasto. Por favor, intente nuevamente.');
   }
+
+ waitingForExpense.delete(userId);
 }
 
 export async function onList(msg) {

@@ -1,7 +1,14 @@
 import TelegramBot from 'node-telegram-bot-api';
 import 'dotenv/config';
 
-import { onAdd, onList, onDeleteAll, onSum, onHelp } from './commandHandlers.js';
+import {
+  onAdd,
+  onDeleteAll,
+  onHelp,
+  onList,
+  onMessage,
+  onSum,
+} from './commandHandlers.js';
 import dbConnect from './config/db.js';
 
 await dbConnect();
@@ -16,8 +23,9 @@ bot.setMyCommands([
   { command: 'help', description: 'Mostrar el menú de ayuda' },
 ]);
 
-bot.onText(/\/add (\d+) (.+)/, onAdd);
+bot.onText(/\/add/, onAdd);
 bot.onText(/\/list/, onList);
 bot.onText(/\/reset/, onDeleteAll);
 bot.onText(/\/total/, onSum);
 bot.onText(/\/help/, onHelp);
+bot.on('message', onMessage);
