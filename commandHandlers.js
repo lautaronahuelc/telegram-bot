@@ -73,14 +73,36 @@ export async function onDelete(msg) {
 
 export async function onDeleteAll(msg) {
   const chatId = msg.chat.id;
-  const user = msg.from.username;
 
   try {
-    await MongoDB.deleteAllExpenses();
-    bot.sendMessage(chatId, `@${user} limpió todos los gastos. ¡Arrancamos de cero!`);
+    const expenses = await MongoDB.loadExpenses();
+
+    if (expenses.length === 0) {
+      bot.sendMessage(chatId, '¡Todavía no hay ningún gasto registrado! Usá /add para empezar.');
+      return;
+    }
+
+    bot.sendMessage(chatId, '¿Está seguro que desea elimnar todos los gastos?', {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: 'Sí, eliminar todos los gastos',
+              callback_data: 'deleteall_confirm',
+            },
+          ],
+          [
+            {
+              text: 'No, cancelar',
+              callback_data: 'deleteall_cancel',
+            },
+          ],
+        ],
+      },
+    });
   } catch (err) {
-    console.error('❌ An error occurred while resetting expenses:', err);
-    bot.sendMessage(chatId, 'Ocurrió un error al limpiar los gastos. Por favor, intente nuevamente.');
+    console.error('❌ An error occurred while loading expenses:', err);
+    bot.sendMessage(chatId, 'Ocurrió un error al cargar los gastos. Por favor, intente nuevamente.');
   }
 }
 
@@ -151,6 +173,7 @@ export async function onCallbackQuery(callbackQuery) {
   const data = callbackQuery.data;
 
   if (data.startsWith('delete_')) await deleteExpense(callbackQuery);
+  if (data.startsWith('deleteall_')) await deleteAllExpenses(callbackQuery);
 
   // Importante: responder al callback para evitar spinner infinito
   bot.answerCallbackQuery(callbackQuery.id);
@@ -194,10 +217,30 @@ async function deleteExpense(callbackQuery) {
     if (deleted) {
       bot.sendMessage(chatId, `✅ Gasto eliminado: $${deleted.amount} - ${deleted.desc}`);
     } else {
-      bot.sendMessage(chatId, `⚠️ No se encontró el gasto.`);
+      bot.sendMessage(chatId, 'No se encontró el gasto.');
     }
   } catch (err) {
     console.error('❌ An error occurred while adding expense:', err);
-    bot.sendMessage(chatId, `❌ Error al eliminar el gasto.`);
+    bot.sendMessage(chatId, 'Error al eliminar el gasto.');
+  }
+}
+
+async function deleteAllExpenses(callbackQuery) {
+  const chatId = callbackQuery.message.chat.id;
+  const data = callbackQuery.data;
+
+  
+  if (data === 'deleteall_confirm') {
+    await bot.sendMessage(chatId, 'Eliminando...');
+    try {
+      await MongoDB.deleteAllExpenses();
+      bot.sendMessage(chatId, '✅ Todos los gastos han sido eliminados.');
+    } catch (err) {
+      console.error('❌ An error occurred while deleting all expenses:', err);
+      bot.sendMessage(chatId, 'Ocurrió un error al eliminar todos los gastos.');
+    }
+  } else if (data === 'deleteall_cancel') {
+    await bot.sendMessage(chatId, 'Cancelando...');
+    bot.sendMessage(chatId, 'Eliminación cancelada.');
   }
 }

@@ -26,12 +26,12 @@ bot.setMyCommands([
   { command: 'help', description: 'Mostrar el menú de ayuda' },
 ]);
 
-bot.onText(/\/add/, onAdd);
-bot.onText(/\/list/, onList);
-bot.onText(/\/delete/, onDelete)
-bot.onText(/\/reset/, onDeleteAll);
-bot.onText(/\/total/, onSum);
-bot.onText(/\/help/, onHelp);
+bot.onText(/^\/add$/, onAdd);
+bot.onText(/^\/list$/, onList);
+bot.onText(/^\/delete$/, onDelete)
+bot.onText(/^\/deleteall$/, onDeleteAll);
+bot.onText(/^\/total$/, onSum);
+bot.onText(/^\/help$/, onHelp);
 
 bot.on('message', onMessage);
 bot.on('callback_query', onCallbackQuery);
