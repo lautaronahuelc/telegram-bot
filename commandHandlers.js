@@ -3,13 +3,16 @@ import { bot } from "./bot.js";
 
 const waitingForResponse = new Map();
 
-export function onAdd(msg) {
+export async function onAdd(msg) {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
 
   waitingForResponse.set(userId, 'add');
 
-  bot.sendMessage(chatId, 'Ingresa monto y descripción del gasto.\nEjemplo: "100 supermercado"');
+  await bot.sendMessage(chatId, 'Ingrese a continuación el monto y la descripción del gasto.');
+  await bot.sendMessage(chatId, 'Asegúrate de usar el formato correcto.');
+  await bot.sendMessage(chatId, 'Recordá:\n👉 El monto debe ser un número entero (sin comas ni puntos)\n👉 No olvides la descripción');
+  bot.sendMessage(chatId, 'Ejemplo: "*7649 verdulería*" o "*50213 supermercado*"', { parse_mode: 'Markdown' });
 }
 
 export async function onList(msg) {
@@ -19,25 +22,24 @@ export async function onList(msg) {
     const expenses = await MongoDB.loadExpenses();
 
     if (expenses.length === 0) {
-      bot.sendMessage(chatId, '¡Todavía no hay ningún gasto registrado! Usá /add para empezar.');
+      await bot.sendMessage(chatId, '¡Ups! Aun no tienes gastos registrados...');
+      bot.sendMessage(chatId, 'Usá /add para comenzar.');
       return;
     }
 
     const grouped = {};
 
-    expenses.forEach(({ user, amount, desc, date }) => {
+    expenses.forEach(({ user, amount, desc }) => {
       if (!grouped[user]) grouped[user] = [];
 
-      const formattedDate = new Date(date).toLocaleDateString('es-AR');
-      grouped[user].push(`💵 $${amount} 📝 ${desc} 🗓️ ${formattedDate}`);
+      grouped[user].push(`💵 $${amount} en concepto de "${desc}"`);
     });
   
-    let response = 'Gastos registrados:\n\n';
+    await bot.sendMessage(chatId, 'Listando gastos...');
+
     for (const user in grouped) {
-      response += `@${user}:\n${grouped[user].join('\n')}\n\n`;
+      bot.sendMessage(chatId, `Gastos de @${user}:\n${grouped[user].join('\n')}`);
     }
-  
-    bot.sendMessage(chatId, response);
   } catch (err) {
     console.error('❌ An error occurred while fetching expenses:', err);
     bot.sendMessage(chatId, 'Ocurrió un error al obtener los gastos. Por favor, intente nuevamente.');
@@ -188,7 +190,10 @@ async function addExpense(msg) {
   const match = msg.text.match(regex);
 
   if (!match) {
-    bot.sendMessage(chatId, 'Formato inválido. No olvides ingresar monto y descripción.');
+    await bot.sendMessage(chatId, '¡Ups! Creo que no te entendí...');
+    await bot.sendMessage(chatId, 'Asegúrate de usar el formato correcto.');
+    await bot.sendMessage(chatId, 'Recordá:\n👉 El monto debe ser un número entero (sin comas ni puntos)\n👉 No olvides la descripción');
+    bot.sendMessage(chatId, 'Ejemplo: "*7649 verdulería*" o "*50213 supermercado*"', { parse_mode: 'Markdown' });
     return;
   }
 
@@ -196,11 +201,12 @@ async function addExpense(msg) {
   const desc = match[2];
 
   try {
+    await bot.sendMessage(chatId, 'Agregando gasto...');
     await MongoDB.insertExpense(user, amount, desc);
-    bot.sendMessage(chatId, `@${user} agregó $${amount} por "${desc}"`);
+    bot.sendMessage(chatId, '✅ Nuevo gasto agregado con éxito.');
   } catch (err) {
     console.error('❌ An error occurred while adding expense:', err);
-    bot.sendMessage(chatId, 'Ocurrió un error al agregar el gasto. Por favor, intente nuevamente.');
+    bot.sendMessage(chatId, '❌ Ocurrió un error al agregar el gasto. Por favor, intente nuevamente más tarde.');
   }
 
   waitingForResponse.delete(userId);
