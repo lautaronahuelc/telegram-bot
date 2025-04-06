@@ -1,6 +1,8 @@
 import TelegramBot from 'node-telegram-bot-api';
 import 'dotenv/config';
 
+import dbConnect from './config/db.js';
+import { withAuth } from './helpers/auth.js';
 import {
   onAdd,
   onCallbackQuery,
@@ -11,7 +13,6 @@ import {
   onMessage,
   onSum,
 } from './helpers/handlers.js';
-import dbConnect from './config/db.js';
 import { commandRegex } from './helpers/utils.js';
 
 await dbConnect();
@@ -27,12 +28,12 @@ bot.setMyCommands([
   { command: 'sum', description: 'Sumar gastos' },
 ]);
 
-bot.onText(commandRegex('add'), onAdd);
-bot.onText(commandRegex('deleteall'), onDeleteAll);
-bot.onText(commandRegex('delete'), onDelete)
-bot.onText(commandRegex('help'), onHelp);
-bot.onText(commandRegex('list'), onList);
-bot.onText(commandRegex('sum'), onSum);
+bot.onText(commandRegex('add'), withAuth(onAdd));
+bot.onText(commandRegex('deleteall'), withAuth(onDeleteAll));
+bot.onText(commandRegex('delete'), withAuth(onDelete));
+bot.onText(commandRegex('help'), withAuth(onHelp));
+bot.onText(commandRegex('list'), withAuth(onList));
+bot.onText(commandRegex('sum'), withAuth(onSum));
 
-bot.on('message', onMessage);
-bot.on('callback_query', onCallbackQuery);
+bot.on('message', withAuth(onMessage));
+bot.on('callback_query', withAuth(onCallbackQuery));
