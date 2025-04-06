@@ -164,7 +164,7 @@ export async function onMessage(msg) {
   const text = msg.text;
 
   const isCommand = COMMANDS.some(
-    (command) => text === command || text === `${command}@duowallet_bot`
+    (command) => text === `/${command.name}` || text === `/${command.name}@duowallet_bot`
   );
 
   if (isCommand) return; 
