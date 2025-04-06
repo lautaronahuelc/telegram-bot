@@ -10,8 +10,9 @@ import {
   onList,
   onMessage,
   onSum,
-} from './commandHandlers.js';
+} from './helpers/handlers.js';
 import dbConnect from './config/db.js';
+import { commandRegex } from './helpers/utils.js';
 
 await dbConnect();
 
@@ -19,19 +20,19 @@ export const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
 
 bot.setMyCommands([
   { command: 'add', description: 'Agregar gasto' },
+  { command: 'deleteall', description: 'Eliminar todos los gastos' },
+  { command: 'delete', description: 'Eliminar un gasto' },
+  { command: 'help', description: 'Mostrar el menú de ayuda' },
   { command: 'list', description: 'Listar gastos' },
   { command: 'sum', description: 'Sumar gastos' },
-  { command: 'delete', description: 'Eliminar un gasto' },
-  { command: 'deleteall', description: 'Eliminar todos los gastos' },
-  { command: 'help', description: 'Mostrar el menú de ayuda' },
 ]);
 
-bot.onText(/^\/add$/, onAdd);
-bot.onText(/^\/list$/, onList);
-bot.onText(/^\/delete$/, onDelete)
-bot.onText(/^\/deleteall$/, onDeleteAll);
-bot.onText(/^\/total$/, onSum);
-bot.onText(/^\/help$/, onHelp);
+bot.onText(commandRegex('add'), onAdd);
+bot.onText(commandRegex('deleteall'), onDeleteAll);
+bot.onText(commandRegex('delete'), onDelete)
+bot.onText(commandRegex('help'), onHelp);
+bot.onText(commandRegex('list'), onList);
+bot.onText(commandRegex('sum'), onSum);
 
 bot.on('message', onMessage);
 bot.on('callback_query', onCallbackQuery);

@@ -1,18 +1,16 @@
-import MongoDB from "./api/expenses.js";
-import { bot } from "./bot.js";
+import MongoDB from "../api/expenses.js";
+import { bot } from "../bot.js";
+import { COMMANDS } from "../constants/commands.js";
 
 const waitingForResponse = new Map();
 
-export async function onAdd(msg) {
+export function onAdd(msg) {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
 
   waitingForResponse.set(userId, 'add');
 
-  await bot.sendMessage(chatId, 'Ingrese a continuación el monto y la descripción del gasto.');
-  await bot.sendMessage(chatId, 'Asegúrate de usar el formato correcto.');
-  await bot.sendMessage(chatId, 'Recordá:\n👉 El monto debe ser un número entero (sin comas ni puntos)\n👉 No olvides la descripción');
-  bot.sendMessage(chatId, 'Ejemplo: "*7649 verdulería*" o "*50213 supermercado*"', { parse_mode: 'Markdown' });
+  bot.sendMessage(chatId, 'Ingrese el monto y la descripción del gasto.');
 }
 
 export async function onList(msg) {
@@ -163,12 +161,20 @@ Ejemplo: "\/add 1000 verdulería"
 
 export async function onMessage(msg) {
   const userId = msg.from.id;
+  const text = msg.text;
 
+  const isCommand = COMMANDS.some(
+    (command) => text === command || text === `${command}@duowallet_bot`
+  );
+
+  if (isCommand) return; 
   if (!waitingForResponse.get(userId)) return;
-
+  
   const command = waitingForResponse.get(userId);
 
   if (command === 'add') await addExpense(msg);
+
+  waitingForResponse.delete(userId);
 }
 
 export async function onCallbackQuery(callbackQuery) {
@@ -176,7 +182,7 @@ export async function onCallbackQuery(callbackQuery) {
 
   if (data.startsWith('delete_')) await deleteExpense(callbackQuery);
   if (data.startsWith('deleteall_')) await deleteAllExpenses(callbackQuery);
-
+  
   // Importante: responder al callback para evitar spinner infinito
   bot.answerCallbackQuery(callbackQuery.id);
 }
@@ -184,16 +190,13 @@ export async function onCallbackQuery(callbackQuery) {
 async function addExpense(msg) {
   const chatId = msg.chat.id;
   const user = msg.from.username;
-  const userId = msg.from.id;
 
   const regex = /^(\d+)\s+(.+)/;
   const match = msg.text.match(regex);
 
   if (!match) {
-    await bot.sendMessage(chatId, '¡Ups! Creo que no te entendí...');
-    await bot.sendMessage(chatId, 'Asegúrate de usar el formato correcto.');
-    await bot.sendMessage(chatId, 'Recordá:\n👉 El monto debe ser un número entero (sin comas ni puntos)\n👉 No olvides la descripción');
-    bot.sendMessage(chatId, 'Ejemplo: "*7649 verdulería*" o "*50213 supermercado*"', { parse_mode: 'Markdown' });
+    await bot.sendMessage(chatId, '¡Ups! El formato es incorrecto.');
+    bot.sendMessage(chatId, 'Ingrese /add para intentarlo de nuevo.');
     return;
   }
 
@@ -201,15 +204,14 @@ async function addExpense(msg) {
   const desc = match[2];
 
   try {
-    await bot.sendMessage(chatId, 'Agregando gasto...');
+    await bot.sendMessage(chatId, 'Agregando gasto... 🕓');
     await MongoDB.insertExpense(user, amount, desc);
-    bot.sendMessage(chatId, '✅ Nuevo gasto agregado con éxito.');
+    await bot.sendMessage(chatId, '✅ Nuevo gasto agregado con éxito.');
+    bot.sendMessage(chatId, 'Ingrese /add para agregar otro gasto.');
   } catch (err) {
     console.error('❌ An error occurred while adding expense:', err);
     bot.sendMessage(chatId, '❌ Ocurrió un error al agregar el gasto. Por favor, intente nuevamente más tarde.');
   }
-
-  waitingForResponse.delete(userId);
 }
 
 async function deleteExpense(callbackQuery) {
