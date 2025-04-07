@@ -1,8 +1,17 @@
-export const COMMANDS = [
-  { name: 'add', desc: 'Agregar gasto' },
-  { name: 'deleteall', desc: 'Eliminar todos los gastos' },
-  { name: 'delete', desc: 'Eliminar un gasto' },
-  { name: 'help', desc: 'Mostrar el menú de ayuda' },
-  { name: 'list', desc: 'Listar gastos' },
-  { name: 'sum', desc: 'Sumar gastos' },
+export const COMMAND = {
+  ADD: 'add',
+  DELETEALL: 'deleteall',
+  DELETE: 'delete',
+  HELP: 'help',
+  LIST: 'list',
+  SUM: 'sum',
+};
+
+export const COMMANDLIST = [
+  { name: COMMAND.ADD, desc: 'Agregar gasto' },
+  { name: COMMAND.DELETEALL, desc: 'Eliminar todos los gastos' },
+  { name: COMMAND.DELETE, desc: 'Eliminar un gasto' },
+  { name: COMMAND.HELP, desc: 'Mostrar el menú de ayuda' },
+  { name: COMMAND.LIST, desc: 'Listar gastos' },
+  { name: COMMAND.SUM, desc: 'Sumar gastos' },
 ];
