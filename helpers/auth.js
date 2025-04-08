@@ -1,4 +1,5 @@
-import { bot } from "../bot.js";
+import { bot } from '../bot.js';
+import { BOT_MESSAGES } from '../constants/messages.js';
 
 function isAuthorized(id) {
   const allowedUsers = JSON.parse(process.env.AUTHORIZED_USERS);
@@ -6,9 +7,9 @@ function isAuthorized(id) {
 }
 
 export function withAuth(handler) {
-  return (msg, match) => {
+  return async (msg, match) => {
     if (!isAuthorized(msg.from.id)) {
-      return bot.sendMessage(msg.chat.id, "¡Lo siento! No estás autorizado para usar este bot 😔");
+      return await bot.sendMessage(msg.chat.id, BOT_MESSAGES.AUTH.ERROR);
     }
     return handler(msg, match);
   };

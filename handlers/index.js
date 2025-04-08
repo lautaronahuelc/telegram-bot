@@ -1,5 +1,5 @@
 export * from './add.js';
-export * from './callback_query.js';
+export * from './callbackQuery.js';
 export * from './delete.js';
 export * from './deleteall.js';
 export * from './help.js';

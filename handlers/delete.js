@@ -1,5 +1,6 @@
 import MongoDB from '../api/expenses.js';
 import { bot } from '../bot.js';
+import { BOT_MESSAGES } from '../constants/messages.js';
 import { buildInlineKeyboard, sendNoExpensesMessage } from '../helpers/expenses.js';
 
 export async function onDelete(msg) {
@@ -9,13 +10,19 @@ export async function onDelete(msg) {
     return await sendNoExpensesMessage(chatId);
   }
   const inlineKeyboard = buildInlineKeyboard(expenses);
-  await bot.sendMessage(chatId, 'Selecciona el gasto a eliminar:', {
+
+  await bot.sendMessage(chatId, BOT_MESSAGES.EXPENSES.DELETING_ONE.SELECT, {
     reply_markup: { inline_keyboard: inlineKeyboard },
   });
 }
 
 export async function deleteExpense(callbackQuery) {
   const chatId = callbackQuery.message.chat.id;
-  const id = callbackQuery.data.replace('delete_', '');
+  const data = callbackQuery.data;
+  if (data === 'delete_cancel') {
+    await bot.sendMessage(chatId, BOT_MESSAGES.EXPENSES.DELETING_ONE.CANCEL);
+    return;
+  }
+  const id = data.replace('delete_', '');
   await MongoDB.deleteExpense(chatId, id);
 }

@@ -1,5 +1,4 @@
 import MongoDB from '../api/expenses.js';
-import { bot } from '../bot.js';
 import {
   groupExpensesByUser,
   sendGroupedExpenses,
@@ -12,7 +11,6 @@ export async function onList(msg) {
   if (expenses.length === 0) {
     return await sendNoExpensesMessage(chatId);
   }
-  await bot.sendMessage(chatId, 'Listando gastos... 🕓');
   const groupedExpenses = groupExpensesByUser(expenses);
   await sendGroupedExpenses(chatId, groupedExpenses);
 }

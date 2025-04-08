@@ -1,5 +1,6 @@
 import MongoDB from '../api/expenses.js';
 import { bot } from '../bot.js';
+import { BOT_MESSAGES } from '../constants/messages.js';
 import { sendNoExpensesMessage } from '../helpers/expenses.js';
 import { buildDeleteAllKeyboard } from '../helpers/keyboard.js';
 
@@ -10,7 +11,7 @@ export async function onDeleteAll(msg) {
     return await sendNoExpensesMessage(chatId);
   }
   const inlineKeyboard = buildDeleteAllKeyboard();
-  await bot.sendMessage(chatId, '¿Está seguro que desea elimnar todos los gastos? 👀', {
+  await bot.sendMessage(chatId, BOT_MESSAGES.EXPENSES.DELETING_ALL.CONFIRM, {
     reply_markup: { inline_keyboard: inlineKeyboard },
   });
 }
@@ -22,7 +23,6 @@ export async function deleteAllExpenses(callbackQuery) {
     await MongoDB.deleteAllExpenses(chatId);
   }
   if (data === 'deleteall_cancel') {
-    await bot.sendMessage(chatId, 'Cancelando... 🕓');
-    await bot.sendMessage(chatId, '✅ Eliminación cancelada. No se han eliminado gastos.');
+    await bot.sendMessage(chatId, BOT_MESSAGES.EXPENSES.DELETING_ALL.CANCEL);
   }
 }

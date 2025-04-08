@@ -10,6 +10,6 @@ export async function onSum(msg) {
     return await sendNoExpensesMessage(chatId);
   }
   const totals = calculateTotals(expenses);
-  const response = formatTotalsMessage(totals);
-  await bot.sendMessage(chatId, response);
+  const message = formatTotalsMessage(totals);
+  await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
 }
