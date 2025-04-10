@@ -1,10 +1,10 @@
 import { bot } from '../bot.js';
 import { BOT_MESSAGES } from '../constants/messages.js';
-import Expenses from '../models/expenses.js';
+import Expense from '../models/expenses.js';
 
 async function loadExpenses(chatId) {
   try {
-    return await Expenses.find({}).sort({ date: -1 });
+    return await Expense.find({}).sort({ date: -1 });
   } catch (err) {
     await bot.sendMessage(chatId, BOT_MESSAGES.EXPENSES.FETCHING.ERROR);
   }
@@ -16,7 +16,7 @@ async function insertExpense(chatId, amount, desc, user) {
     return;
   }
   try {
-    await new Expenses({
+    await new Expense({
       amount,
       desc,
       user,
@@ -29,7 +29,7 @@ async function insertExpense(chatId, amount, desc, user) {
 
 async function deleteExpense(chatId, id) {
   try {
-    await Expenses.findByIdAndDelete(id);
+    await Expense.findByIdAndDelete(id);
     await bot.sendMessage(chatId, BOT_MESSAGES.EXPENSES.DELETING_ONE.SUCCESS);
   } catch (err) {
     await bot.sendMessage(chatId, BOT_MESSAGES.EXPENSES.DELETING_ONE.ERROR);
@@ -38,18 +38,18 @@ async function deleteExpense(chatId, id) {
 
 async function deleteAllExpenses(chatId) {
   try {
-    await Expenses.deleteMany({});
+    await Expense.deleteMany({});
     await bot.sendMessage(chatId, BOT_MESSAGES.EXPENSES.DELETING_ALL.SUCCESS);
   } catch (err) {
     await bot.sendMessage(chatId, BOT_MESSAGES.EXPENSES.DELETING_ALL.ERROR);
   }
 }
 
-const MongoDB = {
+const ExpenseCollection = {
   deleteExpense,
   deleteAllExpenses,
   insertExpense,
   loadExpenses,
 };
 
-export default MongoDB;
+export default ExpenseCollection;

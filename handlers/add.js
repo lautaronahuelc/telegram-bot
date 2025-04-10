@@ -1,4 +1,4 @@
-import MongoDB from '../api/expenses.js';
+import ExpenseCollection from '../api/expenses.js';
 import { bot, waitingForResponse } from '../bot.js';
 import { COMMAND } from '../constants/commands.js';
 import { BOT_MESSAGES } from '../constants/messages.js';
@@ -14,5 +14,5 @@ export async function onAdd(msg) {
 export async function addExpense(msg) {
   const chatId = msg.chat.id;
   const { amount , desc, user } = parseExpenseData(msg);
-  await MongoDB.insertExpense(chatId, amount, desc, user);
+  await ExpenseCollection.insertExpense(chatId, amount, desc, user);
 }

@@ -1,11 +1,11 @@
-import MongoDB from '../api/expenses.js';
+import ExpenseCollection from '../api/expenses.js';
 import { bot } from '../bot.js';
 import { BOT_MESSAGES } from '../constants/messages.js';
 import { buildInlineKeyboard, sendNoExpensesMessage } from '../helpers/expenses.js';
 
 export async function onDelete(msg) {
   const chatId = msg.chat.id;
-  const expenses = await MongoDB.loadExpenses(chatId);
+  const expenses = await ExpenseCollection.loadExpenses(chatId);
   if (expenses.length === 0) {
     return await sendNoExpensesMessage(chatId);
   }
@@ -24,5 +24,5 @@ export async function deleteExpense(callbackQuery) {
     return;
   }
   const id = data.replace('delete_', '');
-  await MongoDB.deleteExpense(chatId, id);
+  await ExpenseCollection.deleteExpense(chatId, id);
 }

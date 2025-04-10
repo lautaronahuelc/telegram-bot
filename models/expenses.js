@@ -7,6 +7,6 @@ const expenseSchema = new Schema({
   date: { type: Date, default: Date.now },
 });
 
-const Expenses = model('Expenses', expenseSchema);
+const Expense = model('Expense', expenseSchema);
 
-export default Expenses;
+export default Expense;
