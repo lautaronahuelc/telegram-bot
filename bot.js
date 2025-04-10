@@ -9,6 +9,7 @@ import {
   onCallbackQuery,
   onDelete,
   onDeleteAll,
+  onEditSalary,
   onHelp,
   onList,
   onMessage,
@@ -30,6 +31,7 @@ bot.setMyCommands(COMMANDLIST.map(({ name, desc }) => ({
 bot.onText(commandRegex(COMMAND.ADD), withAuth(onAdd));
 bot.onText(commandRegex(COMMAND.DELETEALL), withAuth(onDeleteAll));
 bot.onText(commandRegex(COMMAND.DELETE), withAuth(onDelete));
+bot.onText(commandRegex(COMMAND.EDITSALARY), withAuth(onEditSalary));
 bot.onText(commandRegex(COMMAND.HELP), withAuth(onHelp));
 bot.onText(commandRegex(COMMAND.LIST), withAuth(onList));
 bot.onText(commandRegex(COMMAND.SUM), withAuth(onSum));

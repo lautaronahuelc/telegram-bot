@@ -28,4 +28,11 @@ export const BOT_MESSAGES = {
   AUTH: {
     ERROR: '¡Lo siento! No estás autorizado para usar este bot.',
   },
+  USER: {
+    SALARY: {
+      EDIT: 'Ingrese su nuevo salario.',
+      SUCCESS: '✅ Su salario ha sido actualizado con éxito.',
+      ERROR: '❌ Ocurrió un error al actualizar su salario.',
+    },
+  },
 };

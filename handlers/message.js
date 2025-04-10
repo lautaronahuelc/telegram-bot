@@ -2,6 +2,7 @@ import { waitingForResponse } from '../bot.js';
 import { COMMAND } from '../constants/commands.js';
 import { isCommand } from '../helpers/commands.js';
 import { addExpense } from './add.js';
+import { editSalary } from './editsalary.js';
 
 export async function onMessage(msg) {
   const userId = msg.from.id;
@@ -17,6 +18,9 @@ async function handleCommand(command, msg) {
   switch (command) {
     case COMMAND.ADD:
       await addExpense(msg);
+      break;
+    case COMMAND.EDITSALARY:
+      await editSalary(msg);
       break;
     default:
       console.warn(`Unknown command: ${command}`);
