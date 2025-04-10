@@ -4,8 +4,9 @@
   "main": "bot.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon bot.js"
+    "dev": "cross-env NODE_ENV=development nodemon bot.js",
+    "start": "cross-env NODE_ENV=production",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
@@ -16,6 +17,7 @@
     "node-telegram-bot-api": "^0.66.0"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "nodemon": "^3.1.9"
   }
 }
