@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon bot.js",
-    "start": "cross-env NODE_ENV=production",
+    "start": "cross-env NODE_ENV=production nodemon bot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
