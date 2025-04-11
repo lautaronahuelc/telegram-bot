@@ -1,8 +1,9 @@
 import { bot } from '../bot.js';
+import { envConfig } from '../config/env.js';
 import { BOT_MESSAGES } from '../constants/messages.js';
 
 function isAuthorized(id) {
-  const allowedUsers = JSON.parse(process.env.AUTHORIZED_USERS);
+  const allowedUsers = JSON.parse(envConfig.AUTHORIZED_USERS);
   return allowedUsers.includes(id.toString());
 }
 

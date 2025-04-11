@@ -2,6 +2,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import 'dotenv/config';
 
 import dbConnect from './config/db.js';
+import { envConfig } from './config/env.js';
 import { COMMAND, COMMANDLIST } from './constants/commands.js';
 import { withAuth } from './helpers/auth.js';
 import {
@@ -21,7 +22,7 @@ await dbConnect();
 
 export const waitingForResponse = new Map();
 
-export const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
+export const bot = new TelegramBot(envConfig.BOT_TOKEN, { polling: true });
 
 bot.setMyCommands(COMMANDLIST.map(({ name, desc }) => ({
   command: name,

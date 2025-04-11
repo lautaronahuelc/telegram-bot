@@ -1,3 +1,5 @@
+import { envConfig } from '../config/env.js';
+
 export function commandRegex(command) {
-  return new RegExp(`^\\/${command}(@${process.env.BOT_USERNAME})?$`);
+  return new RegExp(`^\\/${command}(@${envConfig.BOT_USERNAME})?$`);
 }
