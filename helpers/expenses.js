@@ -20,11 +20,13 @@ export function buildInlineKeyboard(expenses) {
   return expensesKeyboard;
 }
 
-export function calculateTotals(expenses) {
-  return expenses.reduce((totals, { user, amount }) => {
-    if (!totals[user]) totals[user] = 0;
-    totals[user] += amount;
-    return totals;
+export function calculateTotalExpensesPerUser(expenses) {
+  return expenses.reduce((acc, { userId, username, amount }) => {
+    if (!acc[userId]) {
+      acc[userId] = { username, totalExpenses: 0 };
+    }
+    acc[userId].totalExpenses += amount;
+    return acc;
   }, {});
 }
 

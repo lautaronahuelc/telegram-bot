@@ -23,7 +23,20 @@ async function updateUsername(userId, username) {
   try {
     await User.findByIdAndUpdate(userId, { username });
   } catch (err) {
-    console.warn(`⚠️ Error updating username for user ${username}:`, err);
+    console.warn(`❌ Error updating username for user ${username}:`, err);
+  }
+}
+
+async function updateUsersTotalExpenses(totalExpensesPerUser) {
+  try {
+    for (const userId in totalExpensesPerUser) {
+      await User.updateOne(
+        { userId },
+        { $set: { totalExpenses: totalExpensesPerUser[userId].totalExpenses } }
+      );
+    }
+  } catch (err) {
+    console.warn('❌ Error updating total expenses:', err);
   }
 }
 
@@ -31,6 +44,7 @@ const UserCollection = {
   editSalary,
   getSalaries,
   updateUsername,
+  updateUsersTotalExpenses,
 };
 
 export default UserCollection;

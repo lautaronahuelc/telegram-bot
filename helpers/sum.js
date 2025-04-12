@@ -1,9 +1,9 @@
 import { formatTotalExpenseText } from './expenses.js';
 
-export function formatTotalsMessage(totals) {
+export function formatTotalExpensesPerUserMessage(totalExpensesPerUser) {
   let message = '*Gastos totales*\n';
-  for (const [user, amount] of Object.entries(totals)) {
-    message += formatTotalExpenseText(user, amount) + '\n';
+  for (const { username, totalExpenses } of Object.values(totalExpensesPerUser)) {
+    message += formatTotalExpenseText(username, totalExpenses) + '\n';
   }
   return message;
 }
