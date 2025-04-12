@@ -7,7 +7,7 @@ export async function onEditSalary(msg) {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
   waitingForResponse.set(userId, COMMAND.EDITSALARY);  
-  await bot.sendMessage(chatId, BOT_MESSAGES.USER.SALARY.EDIT);
+  await bot.sendMessage(chatId, BOT_MESSAGES.USER.SALARY.EDITING.INSERT_NEW);
 }
 
 export async function editSalary(msg) {

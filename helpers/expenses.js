@@ -1,5 +1,5 @@
 import { bot } from '../bot.js';
-import { BOT_MESSAGES } from '../constants/messages.js';
+import { formatCurrency } from './currency.js';
 
 export function buildInlineKeyboard(expenses) {
   const sortedExpenses = expenses.sort((a, b) => a.date - b.date);
@@ -29,21 +29,11 @@ export function calculateTotals(expenses) {
 }
 
 export function formatExpenseText(amount, desc) {
-  amount = Intl.NumberFormat('es-AR', {
-    style: 'currency',
-    currency: 'ARS',
-    maximumFractionDigits: 0,
-  }).format(amount).trim();
-  return `_${amount}_ - ${desc}`;
+  return `_${formatCurrency(amount)}_ - ${desc}`;
 }
 
 export function formatTotalExpenseText(user, amount) {
-  amount = Intl.NumberFormat('es-AR', {
-    style: 'currency',
-    currency: 'ARS',
-    maximumFractionDigits: 0,
-  }).format(amount).trim();
-  return `@${user} - ${amount}`;
+  return `@${user} - ${formatCurrency(amount)}`;
 }
 
 export function groupExpensesByUser(expenses) {
@@ -53,10 +43,6 @@ export function groupExpensesByUser(expenses) {
     grouped[user].push(formatExpenseText(amount, desc));
     return grouped;
   }, {});
-}
-
-export async function sendNoExpensesMessage(chatId) {
-  await bot.sendMessage(chatId, BOT_MESSAGES.EXPENSES.FETCHING.NOT_FOUND);
 }
 
 export async function sendGroupedExpenses(chatId, groupedExpenses) {

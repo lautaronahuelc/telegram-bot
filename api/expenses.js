@@ -4,7 +4,12 @@ import Expense from '../models/expenses.js';
 
 async function loadExpenses(chatId) {
   try {
-    return await Expense.find({}).sort({ date: -1 });
+    const expenses = await Expense.find({}).sort({ date: -1 });
+    if (expenses.length === 0) {
+      await bot.sendMessage(chatId, BOT_MESSAGES.EXPENSES.FETCHING.NOT_FOUND);
+      return [];
+    }
+    return expenses;
   } catch (err) {
     await bot.sendMessage(chatId, BOT_MESSAGES.EXPENSES.FETCHING.ERROR);
   }

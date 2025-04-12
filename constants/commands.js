@@ -5,6 +5,7 @@ export const COMMAND = {
   EDITSALARY: 'editsalary',
   HELP: 'help',
   LIST: 'list',
+  SHOWSALARIES: 'showsalaries',
   SUM: 'sum',
 };
 
@@ -15,5 +16,6 @@ export const COMMANDLIST = [
   { name: COMMAND.EDITSALARY, desc: 'Editar tu salario' },
   { name: COMMAND.HELP, desc: 'Mostrar el menú de ayuda' },
   { name: COMMAND.LIST, desc: 'Listar todos los gastos' },
+  { name: COMMAND.SHOWSALARIES, desc: 'Mostrar los salarios' },
   { name: COMMAND.SUM, desc: 'Sumar todos los gastos' },
 ];
