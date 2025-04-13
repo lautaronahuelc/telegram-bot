@@ -15,7 +15,7 @@ import {
   onList,
   onMessage,
   onShowSalaries,
-  onSum,
+  onShowTotals,
 } from './handlers/index.js';
 import { commandRegex } from './helpers/regex.js';
 
@@ -31,13 +31,13 @@ bot.setMyCommands(COMMANDLIST.map(({ name, desc }) => ({
 })));
 
 bot.onText(commandRegex(COMMAND.ADD), withAuth(onAdd));
-bot.onText(commandRegex(COMMAND.DELETEALL), withAuth(onDeleteAll));
-bot.onText(commandRegex(COMMAND.DELETE), withAuth(onDelete));
-bot.onText(commandRegex(COMMAND.EDITSALARY), withAuth(onEditSalary));
-bot.onText(commandRegex(COMMAND.HELP), withAuth(onHelp));
 bot.onText(commandRegex(COMMAND.LIST), withAuth(onList));
+bot.onText(commandRegex(COMMAND.DELETE), withAuth(onDelete));
+bot.onText(commandRegex(COMMAND.DELETEALL), withAuth(onDeleteAll));
+bot.onText(commandRegex(COMMAND.SHOWTOTALS), withAuth(onShowTotals));
+bot.onText(commandRegex(COMMAND.EDITSALARY), withAuth(onEditSalary));
 bot.onText(commandRegex(COMMAND.SHOWSALARIES), withAuth(onShowSalaries));
-bot.onText(commandRegex(COMMAND.SUM), withAuth(onSum));
+bot.onText(commandRegex(COMMAND.HELP), withAuth(onHelp));
 
 bot.on('message', withAuth(onMessage));
 bot.on('callback_query', withAuth(onCallbackQuery));

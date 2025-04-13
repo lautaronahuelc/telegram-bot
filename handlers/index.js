@@ -7,4 +7,4 @@ export * from './help.js';
 export * from './list.js';
 export * from './message.js';
 export * from './showsalaries.js';
-export * from './sum.js';
+export * from './showtotals.js';

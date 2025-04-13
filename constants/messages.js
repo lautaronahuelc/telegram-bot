@@ -44,5 +44,18 @@ export const BOT_MESSAGES = {
         ERROR: '❌ Ocurrió un error al actualizar su nombre de usuario.',
       },
     },
+    TOTAL_EXPENSES: {
+      INCREMENTING: {
+        ERROR: '❌ Ocurrió un error al actualizar los gastos totales.',
+        SUCCESS: '✅ Gastos totales actualizados con éxito.',
+      },
+      RESET: {
+        ERROR: '❌ Ocurrió un error al restablecer los gastos totales.',
+        SUCCESS: '✅ Gastos totales restablecidos con éxito.',
+      },
+      FETCHING: {
+        ERROR: '❌ Ocurrió un error al obtener los gastos totales.',
+      },
+    },
   },
 };

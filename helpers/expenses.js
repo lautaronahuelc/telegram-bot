@@ -20,29 +20,15 @@ export function buildInlineKeyboard(expenses) {
   return expensesKeyboard;
 }
 
-export function calculateTotalExpensesPerUser(expenses) {
-  return expenses.reduce((acc, { userId, username, amount }) => {
-    if (!acc[userId]) {
-      acc[userId] = { username, totalExpenses: 0 };
-    }
-    acc[userId].totalExpenses += amount;
-    return acc;
-  }, {});
-}
-
 export function formatExpenseText(amount, desc) {
   return `_${formatCurrency(amount)}_ - ${desc}`;
 }
 
-export function formatTotalExpenseText(user, amount) {
-  return `@${user} - ${formatCurrency(amount)}`;
-}
-
 export function groupExpensesByUser(expenses) {
   const sortedExpenses = expenses.sort((a, b) => a.date - b.date);
-  return sortedExpenses.reduce((grouped, { user, amount, desc }) => {
-    if (!grouped[user]) grouped[user] = [];
-    grouped[user].push(formatExpenseText(amount, desc));
+  return sortedExpenses.reduce((grouped, { username, amount, desc }) => {
+    if (!grouped[username]) grouped[username] = [];
+    grouped[username].push(formatExpenseText(amount, desc));
     return grouped;
   }, {});
 }
