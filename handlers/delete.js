@@ -1,5 +1,5 @@
-import ExpenseCollection from '../api/expenses.js';
-import UserCollection from '../api/users.js';
+import ExpenseCollection from '../queries/expenses.js';
+import UserCollection from '../queries/users.js';
 import { BOT_MESSAGES } from '../constants/messages.js';
 import { buildInlineKeyboard } from '../helpers/expenses.js';
 import { sendMessage } from '../helpers/sendMessage.js';
@@ -38,11 +38,13 @@ export async function deleteExpense(callbackQuery) {
     return;
   }
 
+  console.log(expenseResult)
+
   // Update the user's total expenses by decrementing the deleted expense amount
-  const userResult = await UserCollection.incrementUserTotalExpenses(
+  const userResult = await UserCollection.incrementTotalExpenses({
     userId,
-    -expenseResult.deletedExpense.amount
-  );
+    amount: -expenseResult.deletedExpense.amount
+  });
 
   // Handle errors when updating the user's total expenses
   if (userResult.error) {

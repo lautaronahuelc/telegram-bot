@@ -38,7 +38,7 @@ async function getSalaries(chatId) {
   }
 }
 
-async function incrementUserTotalExpenses(userId, amount) {
+async function incrementTotalExpenses({ userId, amount }) {
   try {
     const data = await User.updateOne(
       { userId },
@@ -51,7 +51,7 @@ async function incrementUserTotalExpenses(userId, amount) {
   } catch (err) {
     console.error('❌ Error incrementing totalExpenses:', err);
     return {
-      data: {},
+      data: null,
       error: { message: BOT_MESSAGES.USER.TOTAL_EXPENSES.INCREMENTING.ERROR },
     };
   }
@@ -89,7 +89,7 @@ const UserCollection = {
   editSalary,
   findAllTotalExpenses,
   getSalaries,
-  incrementUserTotalExpenses,
+  incrementTotalExpenses,
   resetUsersTotalExpenses,
   updateUsername,
 };

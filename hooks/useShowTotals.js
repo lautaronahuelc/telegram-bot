@@ -1,4 +1,4 @@
-import UserCollection from '../api/users.js';
+import UserCollection from '../queries/users.js';
 import { BOT_MESSAGES } from '../constants/messages.js';
 import { hasData } from '../helpers/array.js';
 import { formatCurrency } from '../helpers/currency.js';

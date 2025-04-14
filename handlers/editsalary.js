@@ -1,4 +1,4 @@
-import UserCollection from '../api/users.js';
+import UserCollection from '../queries/users.js';
 import { bot, waitingForResponse } from '../bot.js';
 import { COMMAND } from '../constants/commands.js';
 import { BOT_MESSAGES } from '../constants/messages.js';

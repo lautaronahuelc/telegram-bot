@@ -1,4 +1,4 @@
-import ExpenseCollection from '../api/expenses.js';
+import ExpenseCollection from '../queries/expenses.js';
 import {
   groupExpensesByUser,
   sendGroupedExpenses,

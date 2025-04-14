@@ -1,4 +1,4 @@
-import UserCollection from '../api/users.js';
+import UserCollection from '../queries/users.js';
 import { bot } from '../bot.js';
 import { formatCurrency } from '../helpers/currency.js';
 

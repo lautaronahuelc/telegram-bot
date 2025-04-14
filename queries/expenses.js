@@ -61,6 +61,12 @@ async function newExpense({
   userId,
   username,
 }) {
+  if (!amount || !desc) {
+    return {
+      data: null,
+      error: { message: BOT_MESSAGES.UPS.INCORRECT_FORMAT },
+    };
+  }
   try {
     const data = await new Expense({
       amount,
@@ -73,8 +79,9 @@ async function newExpense({
       error: { message: null },
     };
   } catch (err) {
+    console.error('❌ Error adding new expense:', err);
     return {
-      data: {},
+      data: null,
       error: { message: BOT_MESSAGES.EXPENSES.ADDING.ERROR },
     };
   }

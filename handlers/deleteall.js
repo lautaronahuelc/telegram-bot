@@ -1,5 +1,5 @@
-import ExpenseCollection from '../api/expenses.js';
-import UserCollection from '../api/users.js';
+import ExpenseCollection from '../queries/expenses.js';
+import UserCollection from '../queries/users.js';
 import { BOT_MESSAGES } from '../constants/messages.js';
 import { buildDeleteAllKeyboard } from '../helpers/keyboard.js';
 import { sendMessage } from '../helpers/sendMessage.js';

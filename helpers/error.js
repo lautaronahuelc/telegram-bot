@@ -1,5 +1,5 @@
 import { isEmpty } from './object.js';
 
-export function hasError(error) {
-  return !isEmpty(error) && error.message !== null;
+export function hasError(...responses) {
+  return responses.find(response => !isEmpty(response) && response.data === null);
 }

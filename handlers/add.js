@@ -1,28 +1,40 @@
 import { waitingForResponse } from '../bot.js';
 import { COMMAND } from '../constants/commands.js';
 import { BOT_MESSAGES } from '../constants/messages.js';
+import { hasError } from '../helpers/error.js';
 import { sendMessage } from '../helpers/sendMessage.js';
-import { useAdd } from '../hooks/useAdd.js';
-import { useIncrement } from '../hooks/useIncrement.js';
+import { useIncrementTotals } from '../hooks/useIncrementTotals.js';
+import { useNewExpense } from '../hooks/useNewExpense.js';
 
 export async function onAdd(msg) {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
-  waitingForResponse.set(userId, COMMAND.ADD);  
+
+  waitingForResponse.set(userId, COMMAND.ADD);
+
   await sendMessage(chatId, BOT_MESSAGES.EXPENSES.ADDING.INSERT_NEW);
 }
 
 export async function addExpense(msg) {
   const chatId = msg.chat.id;
+
   const userId = msg.from.id;
   const username = msg.from.username;
   const { amount , desc } = getAmountAndDesc(msg.text);
 
-  const { message: addMessage } = await useAdd({ amount, desc, userId, username });
-  const { message: incrementMessage } = await useIncrement({ amount, userId });
+  const [newExpense, incrementTotals] = await Promise.all([
+    useNewExpense({ amount, desc, userId, username }),
+    useIncrementTotals({ userId, amount }),
+  ]);
 
-  const message = addMessage + '\n' + incrementMessage;
-  await sendMessage(chatId, message);
+  const error = hasError(newExpense, incrementTotals);
+  
+  if (error) {
+    await sendMessage(chatId, error.message);
+    return;
+  }
+
+  await sendMessage(chatId, newExpense.message);
 }
 
 function getAmountAndDesc(text) {
