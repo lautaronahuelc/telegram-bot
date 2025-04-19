@@ -1,5 +1,5 @@
-import { bot } from '../bot.js';
 import { COMMANDLIST } from '../constants/commands.js';
+import { sendMessage } from '../helpers/sendMessage.js';
 
 export async function onHelp(msg) {
   const chatId = msg.chat.id;
@@ -7,5 +7,5 @@ export async function onHelp(msg) {
   for (const command of COMMANDLIST) {
     message += `/${command.name} - ${command.desc.toLowerCase()}\n`;
   }
-  await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+  await sendMessage(chatId, message, { parse_mode: 'Markdown' });
 }

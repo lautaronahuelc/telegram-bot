@@ -1,18 +1,16 @@
 import { formatCurrency } from '../helpers/currency.js';
-import { hasError } from '../helpers/error.js';
 import { sendMessage } from '../helpers/sendMessage.js';
 import UserCollection from '../queries/users.js';
 
 export async function onShowTotals(msg) {
-  const result = await UserCollection.findAllTotalExpenses();
-  const error = hasError(result);
+  const { data, error } = await UserCollection.findAllTotalExpenses();
 
-  if (error) {
-    await sendMessage(chatId, error.message);
+  if (error || !data.length) {
+    await sendMessage(chatId, '❌ Ocurrió un error al obtener los gastos totales.');
     return;
   }
 
-  const message = buildMessage(result.data);
+  const message = buildMessage(data);
   await sendMessage(msg.chat.id, message, { parse_mode: 'Markdown' });
 }
 

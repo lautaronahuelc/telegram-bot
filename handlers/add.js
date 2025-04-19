@@ -1,10 +1,8 @@
 import { waitingForResponse } from '../bot.js';
 import { COMMAND } from '../constants/commands.js';
-import { BOT_MESSAGES } from '../constants/messages.js';
-import { hasError } from '../helpers/error.js';
 import { sendMessage } from '../helpers/sendMessage.js';
-import { useIncrementTotals } from '../hooks/useIncrementTotals.js';
-import { useNewExpense } from '../hooks/useNewExpense.js';
+import ExpenseCollection from '../queries/expenses.js';
+import UserCollection from '../queries/users.js';
 
 export async function onAdd(msg) {
   const chatId = msg.chat.id;
@@ -12,29 +10,41 @@ export async function onAdd(msg) {
 
   waitingForResponse.set(userId, COMMAND.ADD);
 
-  await sendMessage(chatId, BOT_MESSAGES.EXPENSES.ADDING.INSERT_NEW);
+  await sendMessage(chatId, 'Ingrese el nuevo gasto ✏');
 }
 
 export async function addExpense(msg) {
   const chatId = msg.chat.id;
-
   const userId = msg.from.id;
   const username = msg.from.username;
-  const { amount , desc } = getAmountAndDesc(msg.text);
 
-  const [newExpense, incrementTotals] = await Promise.all([
-    useNewExpense({ amount, desc, userId, username }),
-    useIncrementTotals({ userId, amount }),
-  ]);
+  const { amount , desc } = getAmountAndDesc(msg.text); 
 
-  const error = hasError(newExpense, incrementTotals);
-  
-  if (error) {
-    await sendMessage(chatId, error.message);
+  if (!amount || !desc) {
+    await sendMessage(chatId, '❌ Formato incorrecto.');
     return;
   }
 
-  await sendMessage(chatId, newExpense.message);
+  const { error: neError } = await ExpenseCollection.create({
+    amount,
+    desc,
+    userId,
+    username
+  });
+
+  if (neError) {
+    await sendMessage(chatId, '❌ Ocurrió un error al agregar el gasto.');
+    return;
+  }
+
+  const { error: iteError } = await UserCollection.incrementTotalExpenses(userId, amount);
+
+  if (iteError) {
+    await sendMessage(chatId, '❌ Ocurrió un error al actualizar los gastos totales. Eliminar el último gasto ingresado para evitar errores de cálculo.');
+    return;
+  }
+
+  await sendMessage(chatId, '✅ Nuevo gasto agregado con éxito.');
 }
 
 function getAmountAndDesc(text) {

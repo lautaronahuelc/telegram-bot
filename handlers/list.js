@@ -1,20 +1,23 @@
 import ExpenseCollection from '../queries/expenses.js';
-import { hasError } from '../helpers/error.js';
 import { sendMessage } from '../helpers/sendMessage.js';
 import { formatExpenseText } from '../helpers/expenses.js';
 
 export async function onList(msg) {
   const chatId = msg.chat.id;
 
-  const result = await ExpenseCollection.loadExpenses();
-  const error = hasError(result);
+  const { data, error } = await ExpenseCollection.getAll();
+
+  if (!data.length) {
+    await sendMessage(chatId, '❌ No se encontraron gastos.');
+    return;
+  }
 
   if (error) {
-    await sendMessage(chatId, error.message);
+    await sendMessage(chatId, '❌ Ocurrió un error al obtener los gastos.');
     return;
   }
   
-  const message = buildMessage(result.data);
+  const message = buildMessage(data);
   await sendMessage(chatId, message, { parse_mode: 'Markdown' });
 }
 

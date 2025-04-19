@@ -1,24 +1,17 @@
-import { BOT_MESSAGES } from '../constants/messages.js';
 import User from '../models/users.js';
 
-async function editSalary({ userId, salary }) {
+async function editSalary(userId, salary) {
   try {
     const data = await User.findOneAndUpdate({ userId }, { salary }, { new: true });
-    if (!data) {
-      return {
-        data: null,
-        error: { message: BOT_MESSAGES.USER.SALARY.EDITING.USER_NOT_FOUND },
-      };
-    }
     return {
       data,
-      error: { message: null },
+      error: false,
     };
   } catch (err) {
     console.error('❌ Error editing salary:', err);
     return {
       data: null,
-      error: { message: BOT_MESSAGES.USER.SALARY.EDITING.ERROR },
+      error: true,
     };
   }
 }
@@ -28,13 +21,13 @@ async function findAllTotalExpenses() {
     const data = await User.find({}, { totalExpenses: 1, username: 1, _id: 0 });
     return {
       data,
-      error: { message: null },
+      error: false,
     }
   } catch (err) {
     console.error('❌ Error fetching total expenses:', err);
     return {
       data: null,
-      error: { message: BOT_MESSAGES.USER.TOTAL_EXPENSES.FETCHING.ERROR },
+      error: true,
     };
   }
 }
@@ -47,45 +40,36 @@ async function getSalaries() {
       userId: 1,
       _id: 0,
     });
-    if (!data.length) {
-      return {
-        data: null,
-        error: { message: BOT_MESSAGES.USER.SALARY.FETCHING.USER_NOT_FOUND },
-      }
-    }
     return {
       data,
-      error: { message: null },
+      error: false,
     }
   } catch (err) {
     console.error('❌ Error fetching salaries:', err);
     return {
       data: null,
-      error: { message: BOT_MESSAGES.USER.SALARY.FETCHING.ERROR },
+      error: true,
     }
   }
 }
 
-async function incrementTotalExpenses({ userId, amount }) {
+async function incrementTotalExpenses(userId, amount) {
   try {
     const data = await User.updateOne(
       { userId },
       { $inc: { totalExpenses: amount } }
     );
-    return {
-      data,
-      error: { message: null },
-    };
+
+    if (data.modifiedCount === 0) return { error: true };
+    
+    return { error: false };
   } catch (err) {
     console.error('❌ Error incrementing totalExpenses:', err);
-    return {
-      data: null,
-      error: { message: BOT_MESSAGES.USER.TOTAL_EXPENSES.INCREMENTING.ERROR },
-    };
+    return { error: true };
   }
 }
 
-async function resetUsersTotalExpenses() {
+/* async function resetUsersTotalExpenses() {
   try {
     await User.updateMany({}, { totalExpenses: 0 });
     return {
@@ -103,26 +87,20 @@ async function resetUsersTotalExpenses() {
       successMessage: null,
     };
   }
-}
+} */
 
-async function updateContributionPercentage({ userId, newPercentage }) {
+async function updateContributionPercentage(userId, newPercentage) {
   try {
     const data = await User.findOneAndUpdate({ userId }, { contributionPercentage: newPercentage }, { new: true })
-    if (!data) {
-      return {
-        data: null,
-        error: { message: BOT_MESSAGES.USER.CONTRIBUTION_PERCENTAGE.EDITING.USER_NOT_FOUND },
-      };
-    }
     return {
       data,
-      error: { message: null },
+      error: false,
     }
   } catch (err) {
     console.error('❌ Error editing contributionPercentage:', err);
     return {
       data: null,
-      error: { message: BOT_MESSAGES.USER.CONTRIBUTION_PERCENTAGE.EDITING.ERROR },
+      error: true,
     };
   }
 }
@@ -132,7 +110,7 @@ const UserCollection = {
   findAllTotalExpenses,
   getSalaries,
   incrementTotalExpenses,
-  resetUsersTotalExpenses,
+  /* resetUsersTotalExpenses, */
   updateContributionPercentage,
 };
 

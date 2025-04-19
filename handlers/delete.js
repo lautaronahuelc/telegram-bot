@@ -1,25 +1,26 @@
 import ExpenseCollection from '../queries/expenses.js';
 import UserCollection from '../queries/users.js';
-import { BOT_MESSAGES } from '../constants/messages.js';
 import { sendMessage } from '../helpers/sendMessage.js';
-import { hasError } from '../helpers/error.js';
 import { formatExpenseText } from '../helpers/expenses.js';
-import { useDeleteExpense } from '../hooks/useDeleteExpense.js';
-import { useIncrementTotals } from '../hooks/useIncrementTotals.js';
 
 export async function onDelete(msg) {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
 
-  const { data, error } = await ExpenseCollection.loadExpenses(userId);
-  
-  if (hasError(error)) {
-    await sendMessage(chatId, error.message);
+  const { data, error } = await ExpenseCollection.getAll(userId);
+
+  if (!data.length) {
+    await sendMessage(chatId, '❌ No se encontraron gastos.');
+    return;
+  }
+
+  if (error) {
+    await sendMessage(chatId, '❌ Ocurrió un error al obtener los gastos.');
     return;
   }
 
   const inlineKeyboard = buildInlineKeyboard(data);
-  await sendMessage(chatId, BOT_MESSAGES.EXPENSES.DELETING_ONE.SELECT, {
+  await sendMessage(chatId, 'Seleccione el gasto a eliminar 👇', {
     reply_markup: { inline_keyboard: inlineKeyboard },
   });
 }
@@ -55,7 +56,7 @@ export async function deleteExpense(callbackQuery) {
 
 async function handleDeleteCancel(callbackQuery) {
   const chatId = callbackQuery.message.chat.id;
-  await sendMessage(chatId, BOT_MESSAGES.EXPENSES.DELETING_ONE.CANCEL);
+  await sendMessage(chatId, '✅ Eliminación cancelada. No se ha eliminado ningún gasto.');
 }
 
 async function handleDeleteConfirm(callbackQuery) {
@@ -63,16 +64,26 @@ async function handleDeleteConfirm(callbackQuery) {
   const userId = callbackQuery.from.id;
   const id = callbackQuery.data.replace('delete_', '');
 
-  const deleteExpense = await useDeleteExpense(id);
-  const incrementTotals = await useIncrementTotals({ userId, amount: -deleteExpense.data?.amount || 0 });
+  const { data: rData, error: rError } = await ExpenseCollection.remove(id);
 
-  const error = hasError(deleteExpense, incrementTotals);
-
-  if (error) {
-    await sendMessage(chatId, error.message);
+  if (rError) {
+    await sendMessage(chatId, '❌ Ocurrió un error al eliminar el gasto.');
     return;
   }
 
-  await sendMessage(chatId, deleteExpense.message);
+  const { amount, desc } = rData;
+
+  const { error: iteError } = await UserCollection.incrementTotalExpenses(userId, -amount);
+
+  if (iteError) {
+    await sendMessage(
+      chatId,
+      `❌ Ocurrió un error al actualizar los gastos totales. Agregar el gasto eliminado para evitar errores de cálculo.\n\n*Gasto elminado*\n${formatExpenseText(amount, desc)}`,
+      { parse_mode: 'Markdown' }
+    );
+    return;
+  }
+
+  await sendMessage(chatId, '✅ Gasto eliminado con éxito.');
 }
 
