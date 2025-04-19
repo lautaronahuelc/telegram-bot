@@ -15,17 +15,13 @@ async function findAllTotalExpenses() {
     const data = await User.find({}, { totalExpenses: 1, username: 1, _id: 0 });
     return {
       data,
-      error: {
-        message: null,
-      },
+      error: { message: null },
     }
   } catch (err) {
     console.error('❌ Error fetching total expenses:', err);
     return {
-      data: [],
-      error: {
-        message: BOT_MESSAGES.USER.TOTAL_EXPENSES.FETCHING.ERROR,
-      },
+      data: null,
+      error: { message: BOT_MESSAGES.USER.TOTAL_EXPENSES.FETCHING.ERROR },
     };
   }
 }

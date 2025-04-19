@@ -19,10 +19,7 @@ export const BOT_MESSAGES = {
       SUCCESS: '✅ Gasto eliminado con éxito.',
     },
     DELETING_ALL: {
-      CANCEL: '✅ Eliminación cancelada. No se han eliminado gastos.',
-      CONFIRM: '¿Está seguro que desea eliminar todos los gastos? 👀',
       ERROR: '❌ Ocurrió un error al eliminar los gastos.',
-      SUCCESS: '✅ Todos los gastos han sido eliminados con éxito.',
     },
   },
   UPS: {

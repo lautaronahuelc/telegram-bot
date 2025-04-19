@@ -5,14 +5,16 @@ import { formatExpenseText } from '../helpers/expenses.js';
 
 export async function onList(msg) {
   const chatId = msg.chat.id;
-  const { data, error } = await ExpenseCollection.loadExpenses();
-  
-  if (hasError(error)) {
+
+  const result = await ExpenseCollection.loadExpenses();
+  const error = hasError(result);
+
+  if (error) {
     await sendMessage(chatId, error.message);
     return;
   }
   
-  const message = buildMessage(data);
+  const message = buildMessage(result.data);
   await sendMessage(chatId, message, { parse_mode: 'Markdown' });
 }
 

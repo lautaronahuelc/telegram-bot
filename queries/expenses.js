@@ -21,17 +21,14 @@ async function deleteAllExpenses() {
   try {
     await Expense.deleteMany({});
     return {
-      success: true,
-      successMessage: BOT_MESSAGES.EXPENSES.DELETING_ALL.SUCCESS,
-      error: false,
-      errorMessage: null,
+      data: {},
+      error: { message: null },
     };
   } catch (err) {
+    console.error('❌ Error deleting all expenses:', err);
     return {
-      success: false,
-      successMessage: null,
-      error: true,
-      errorMessage: BOT_MESSAGES.EXPENSES.DELETING_ALL.ERROR,
+      data: null,
+      error: { message: BOT_MESSAGES.EXPENSES.DELETING_ALL.ERROR },
     };
   }
 }
