@@ -1,12 +1,25 @@
 import { BOT_MESSAGES } from '../constants/messages.js';
 import User from '../models/users.js';
 
-async function editSalary(chatId, userId, salary) {
+async function editSalary({ userId, salary }) {
   try {
-    await User.findByIdAndUpdate(userId, { salary });
-    await sendMessage(chatId, BOT_MESSAGES.USER.SALARY.EDITING.SUCCESS);
+    const data = await User.findOneAndUpdate({ userId }, { salary }, { new: true });
+    if (!data) {
+      return {
+        data: null,
+        error: { message: BOT_MESSAGES.USER.SALARY.EDITING.USER_NOT_FOUND },
+      };
+    }
+    return {
+      data,
+      error: { message: null },
+    };
   } catch (err) {
-    await sendMessage(chatId, BOT_MESSAGES.USER.SALARY.EDITING.ERROR);
+    console.error('❌ Error editing salary:', err);
+    return {
+      data: null,
+      error: { message: BOT_MESSAGES.USER.SALARY.EDITING.ERROR },
+    };
   }
 }
 
@@ -26,11 +39,30 @@ async function findAllTotalExpenses() {
   }
 }
 
-async function getSalaries(chatId) {
+async function getSalaries() {
   try {
-    return await User.find({}, { salary: 1, username: 1, _id: 0 });
+    const data = await User.find({}, {
+      salary: 1,
+      username: 1,
+      userId: 1,
+      _id: 0,
+    });
+    if (!data.length) {
+      return {
+        data: null,
+        error: { message: BOT_MESSAGES.USER.SALARY.FETCHING.USER_NOT_FOUND },
+      }
+    }
+    return {
+      data,
+      error: { message: null },
+    }
   } catch (err) {
-    await sendMessage(chatId, BOT_MESSAGES.USER.SALARY.FETCHING.ERROR);
+    console.error('❌ Error fetching salaries:', err);
+    return {
+      data: null,
+      error: { message: BOT_MESSAGES.USER.SALARY.FETCHING.ERROR },
+    }
   }
 }
 
@@ -73,11 +105,25 @@ async function resetUsersTotalExpenses() {
   }
 }
 
-async function updateUsername(userId, username) {
+async function updateContributionPercentage({ userId, newPercentage }) {
   try {
-    await User.findByIdAndUpdate(userId, { username });
+    const data = await User.findOneAndUpdate({ userId }, { contributionPercentage: newPercentage }, { new: true })
+    if (!data) {
+      return {
+        data: null,
+        error: { message: BOT_MESSAGES.USER.CONTRIBUTION_PERCENTAGE.EDITING.USER_NOT_FOUND },
+      };
+    }
+    return {
+      data,
+      error: { message: null },
+    }
   } catch (err) {
-    console.error(`❌ Error updating username for user ${username}:`, err);
+    console.error('❌ Error editing contributionPercentage:', err);
+    return {
+      data: null,
+      error: { message: BOT_MESSAGES.USER.CONTRIBUTION_PERCENTAGE.EDITING.ERROR },
+    };
   }
 }
 
@@ -87,7 +133,7 @@ const UserCollection = {
   getSalaries,
   incrementTotalExpenses,
   resetUsersTotalExpenses,
-  updateUsername,
+  updateContributionPercentage,
 };
 
 export default UserCollection;

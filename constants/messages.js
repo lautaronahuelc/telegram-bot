@@ -31,9 +31,11 @@ export const BOT_MESSAGES = {
         ERROR: '❌ Ocurrió un error al actualizar su salario.',
         INSERT_NEW: 'Ingrese su nuevo salario.',
         SUCCESS: '✅ Su salario ha sido actualizado con éxito.',
+        USER_NOT_FOUND: 'Usuario no encontrado.'
       },
       FETCHING: {
         ERROR: '❌ Ocurrió un error al obtener su salario.',
+        USER_NOT_FOUND: 'Usuario no encontrado.',
       },
     },
     USERNAME: {
@@ -52,6 +54,12 @@ export const BOT_MESSAGES = {
       },
       FETCHING: {
         ERROR: '❌ Ocurrió un error al obtener los gastos totales.',
+      },
+    },
+    CONTRIBUTION_PERCENTAGE: {
+      EDITING: {
+        ERROR: '❌ Ocurrió un error al editar el porcentaje.',
+        USER_NOT_FOUND: 'Usuario no encontrado.',
       },
     },
   },
