@@ -1,18 +1,60 @@
-import UserCollection from '../api/users.js';
-import { bot, waitingForResponse } from '../bot.js';
+import { waitingForResponse } from '../bot.js';
 import { COMMAND } from '../constants/commands.js';
-import { BOT_MESSAGES } from '../constants/messages.js';
+import { anyError } from '../helpers/error.js';
+import { sendMessage } from '../helpers/sendMessage.js';
+import UserCollection from '../queries/users.js';
 
 export async function onEditSalary(msg) {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
+
   waitingForResponse.set(userId, COMMAND.EDITSALARY);  
-  await bot.sendMessage(chatId, BOT_MESSAGES.USER.SALARY.EDITING.INSERT_NEW);
+  
+  await sendMessage(chatId, 'Ingrese su nuevo salario ✏');
 }
 
 export async function editSalary(msg) {
   const chatId = msg.chat.id;
-  const text = parseInt(msg.text);
+  const newSalary = parseInt(msg.text);
   const userId = msg.from.id.toString();
-  await UserCollection.editSalary(chatId, userId, text);
+  
+  const { data, error } = await UserCollection.editSalary(userId, newSalary);
+
+  if (error || !data) {
+    await sendMessage(chatId, '❌ Ocurrió un error al actualizar su salario.');
+    return;
+  }
+
+  const upError = await updatePercentages();
+
+  if (upError) {
+    await sendMessage(chatId, upError);
+    return; 
+  }
+
+  await sendMessage(chatId, '✅ Su salario ha sido actualizado con éxito.');
+}
+
+async function updatePercentages() {
+  const { data, error } = await UserCollection.getSalaries();
+
+  if (error || !data.length) {
+    return '❌ Error al actualizar porcentaje de los usuarios. Intente nuevamente más tarde.'
+  }
+
+  const totalIncome = data.reduce((acc, { salary }) => {
+    return acc + salary;
+  }, 0);
+
+  const promises = data.map(({ salary, userId }) => {
+    const rawPercentage = (salary / totalIncome) * 100;
+    const newPercentage = rawPercentage.toFixed(2);
+    return UserCollection.updateContributionPercentage(userId, parseFloat(newPercentage));
+  });
+  
+  const updatingPercentages = await Promise.all(promises);
+  
+  if (anyError(...updatingPercentages)) {
+    return '❌ Error al actualizar porcentaje de los usuarios. Intente nuevamente más tarde.';
+  }
 }
