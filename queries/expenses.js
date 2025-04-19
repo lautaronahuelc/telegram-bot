@@ -1,24 +1,18 @@
 import { BOT_MESSAGES } from '../constants/messages.js';
-import { sendMessage } from '../helpers/sendMessage.js';
 import Expense from '../models/expenses.js';
 
 async function deleteExpense(id) {
   try {
-    const deletedExpense = await Expense.findByIdAndDelete(id);
+    const data = await Expense.findByIdAndDelete(id);
     return {
-      deletedExpense,
-      error: false,
-      errorMessage: null,
-      success: true,
-      successMessage: BOT_MESSAGES.EXPENSES.DELETING_ONE.SUCCESS,
+      data,
+      error: { message: null },
     };
   } catch (err) {
+    console.error('❌ Error deleting selected expense:', err);
     return {
-      deletedExpense: null,
-      error: true,
-      errorMessage: BOT_MESSAGES.EXPENSES.DELETING_ONE.ERROR,
-      success: false,
-      successMessage: null,
+      data: null,
+      error: { message: BOT_MESSAGES.EXPENSES.DELETING_ONE.ERROR },
     };
   }
 }
@@ -42,16 +36,25 @@ async function deleteAllExpenses() {
   }
 }
 
-async function loadExpenses(chatId) {
+async function loadExpenses(userId) {
   try {
-    const expenses = await Expense.find({}).sort({ date: -1 });
-    if (expenses.length === 0) {
-      await sendMessage(chatId, BOT_MESSAGES.EXPENSES.FETCHING.NOT_FOUND);
-      return [];
+    const data = await Expense.find(userId ? { userId } : {}).sort({ date: -1 });
+    if (!data.length) {
+      return {
+        data: null,
+        error: { message: BOT_MESSAGES.EXPENSES.FETCHING.NOT_FOUND },
+      };
     }
-    return expenses;
+    return {
+      data,
+      error: { message: null },
+    };
   } catch (err) {
-    await sendMessage(chatId, BOT_MESSAGES.EXPENSES.FETCHING.ERROR);
+    console.error('❌ Error loading expenses:', err);
+    return {
+      data: null,
+      error: { message: BOT_MESSAGES.EXPENSES.FETCHING.ERROR },
+    };
   }
 }
 

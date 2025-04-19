@@ -1,59 +1,78 @@
 import ExpenseCollection from '../queries/expenses.js';
 import UserCollection from '../queries/users.js';
 import { BOT_MESSAGES } from '../constants/messages.js';
-import { buildInlineKeyboard } from '../helpers/expenses.js';
 import { sendMessage } from '../helpers/sendMessage.js';
+import { hasError } from '../helpers/error.js';
+import { formatExpenseText } from '../helpers/expenses.js';
+import { useDeleteExpense } from '../hooks/useDeleteExpense.js';
+import { useIncrementTotals } from '../hooks/useIncrementTotals.js';
 
 export async function onDelete(msg) {
   const chatId = msg.chat.id;
-  const expenses = await ExpenseCollection.loadExpenses(chatId);
-  if (expenses.length === 0) return;
-  const inlineKeyboard = buildInlineKeyboard(expenses);
+  const userId = msg.from.id;
+
+  const { data, error } = await ExpenseCollection.loadExpenses(userId);
+  
+  if (hasError(error)) {
+    await sendMessage(chatId, error.message);
+    return;
+  }
+
+  const inlineKeyboard = buildInlineKeyboard(data);
   await sendMessage(chatId, BOT_MESSAGES.EXPENSES.DELETING_ONE.SELECT, {
     reply_markup: { inline_keyboard: inlineKeyboard },
   });
 }
 
-export async function deleteExpense(callbackQuery) {
-  // Extract basic information from the callback query
-  const chatId = callbackQuery.message.chat.id;
-  const data = callbackQuery.data;
-  const userId = callbackQuery.from.id;
-
-  // Handle cancellation
-  if (data === 'delete_cancel') {
-    await sendMessage(chatId, BOT_MESSAGES.EXPENSES.DELETING_ONE.CANCEL);
-    return;
-  }
-
-  // Extract the expense ID from the callback data
-  const id = data.replace('delete_', '');
-
-  // Attempt to delete the expense from the database
-  const expenseResult = await ExpenseCollection.deleteExpense(id);
-
-  // Handle errors when deleting the expense
-  if (expenseResult.error) {
-    await sendMessage(chatId, expenseResult.errorMessage);
-    return;
-  }
-
-  console.log(expenseResult)
-
-  // Update the user's total expenses by decrementing the deleted expense amount
-  const userResult = await UserCollection.incrementTotalExpenses({
-    userId,
-    amount: -expenseResult.deletedExpense.amount
+function buildInlineKeyboard(data) {
+  const sortedExpenses = data.sort((a, b) => a.date - b.date);
+  const expensesKeyboard = sortedExpenses.map(({ amount, desc, id }) => {
+    return [
+      {
+        text: formatExpenseText(amount, desc).replaceAll('_', ''),
+        callback_data: `delete_${id}`,
+      },
+    ];
   });
+  expensesKeyboard.push([
+    {
+      text: 'Cancelar',
+      callback_data: 'delete_cancel',
+    },
+  ]);
+  return expensesKeyboard;
+}
 
-  // Handle errors when updating the user's total expenses
-  if (userResult.error) {
-    const message = `${expenseResult.successMessage}\n${userResult.errorMessage}`;
-    await sendMessage(chatId, message);
+export async function deleteExpense(callbackQuery) {
+  switch (callbackQuery.data) {
+    case 'delete_cancel':
+      await handleDeleteCancel(callbackQuery);
+      break;
+    default:
+      await handleDeleteConfirm(callbackQuery); 
+  }
+}
+
+async function handleDeleteCancel(callbackQuery) {
+  const chatId = callbackQuery.message.chat.id;
+  await sendMessage(chatId, BOT_MESSAGES.EXPENSES.DELETING_ONE.CANCEL);
+}
+
+async function handleDeleteConfirm(callbackQuery) {
+  const chatId = callbackQuery.message.chat.id;
+  const userId = callbackQuery.from.id;
+  const id = callbackQuery.data.replace('delete_', '');
+
+  const deleteExpense = await useDeleteExpense(id);
+  const incrementTotals = await useIncrementTotals({ userId, amount: -deleteExpense.data?.amount || 0 });
+
+  const error = hasError(deleteExpense, incrementTotals);
+
+  if (error) {
+    await sendMessage(chatId, error.message);
     return;
   }
 
-  // Send a success message if both operations succeed
-  const message = `${expenseResult.successMessage}\n${userResult.successMessage}`;
-  await sendMessage(chatId, message);
+  await sendMessage(chatId, deleteExpense.message);
 }
+

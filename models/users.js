@@ -5,8 +5,8 @@ const userSchema = new Schema({
   username: { type: String, required: true },
   salary: { type: Number, required: true },
   contributionPercentage: { type: Number, required: true },
-  totalExpenses: { type: Number, required: true }, // total gastos
-  amountDueToUser: { type: Number, required: true }, // deuda
+  totalExpenses: { type: Number, required: true },
+  amountDueToUser: { type: Number, required: true },
 });
 
 const User = model('User', userSchema);
