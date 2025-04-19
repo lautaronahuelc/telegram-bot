@@ -13,7 +13,7 @@ export async function onShowSalaries(msg) {
 
   let message = '*Salarios ingresados*\n';
 
-  for (const { username, salary } of salaries.data) {
+  for (const { username, salary } of data) {
     message += `@${username}: ${formatCurrency(salary)}\n`;
   }
 
