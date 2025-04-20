@@ -47,8 +47,7 @@ async function updatePercentages() {
   }, 0);
 
   const promises = data.map(({ salary, userId }) => {
-    const rawPercentage = (salary / totalIncome) * 100;
-    const newPercentage = rawPercentage.toFixed(2);
+    const newPercentage = (salary / totalIncome).toFixed(4);
     return UserCollection.updateContributionPercentage(userId, parseFloat(newPercentage));
   });
   

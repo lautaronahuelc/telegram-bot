@@ -16,19 +16,19 @@ async function editSalary(userId, salary) {
   }
 }
 
-async function findAllTotalExpenses() {
+async function getAll() {
   try {
-    const data = await User.find({}, { totalExpenses: 1, username: 1, _id: 0 });
+    const data = await User.find({}, { _id: 0, userId: 0 });
     return {
       data,
       error: false,
     }
   } catch (err) {
-    console.error('❌ Error fetching total expenses:', err);
+    console.error('❌ Error fetching user information:', err);
     return {
       data: null,
       error: true,
-    };
+    }
   }
 }
 
@@ -107,7 +107,7 @@ async function updateContributionPercentage(userId, newPercentage) {
 
 const UserCollection = {
   editSalary,
-  findAllTotalExpenses,
+  getAll,
   getSalaries,
   incrementTotalExpenses,
   /* resetUsersTotalExpenses, */
