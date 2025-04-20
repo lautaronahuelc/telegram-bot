@@ -1,4 +1,5 @@
 export * from './add.js';
+export * from './calculate.js';
 export * from './callbackQuery.js';
 export * from './delete.js';
 export * from './editsalary.js';
