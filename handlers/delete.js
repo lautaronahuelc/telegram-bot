@@ -2,15 +2,21 @@ import ExpenseCollection from '../queries/expenses.js';
 import UserCollection from '../queries/users.js';
 import { sendMessage } from '../helpers/sendMessage.js';
 import { formatExpenseText } from '../helpers/expenses.js';
+import { reactToMessage } from '../helpers/reactToMessage.js';
+
+export let messageToDeleteId;
 
 export async function onDelete(msg) {
   const chatId = msg.chat.id;
+  const messageId = msg.message_id;
   const userId = msg.from.id;
+
+  messageToDeleteId = messageId;
 
   const { data, error } = await ExpenseCollection.getAll(userId);
 
   if (!data.length) {
-    await sendMessage(chatId, '❌ No se encontraron gastos.');
+    await reactToMessage(chatId, messageId, '🤔');
     return;
   }
 
@@ -20,7 +26,7 @@ export async function onDelete(msg) {
   }
 
   const inlineKeyboard = buildInlineKeyboard(data);
-  await sendMessage(chatId, 'Seleccione el gasto a eliminar 👇', {
+  await sendMessage(chatId, 'Seleccione el gasto a eliminar.', {
     reply_markup: { inline_keyboard: inlineKeyboard },
   });
 }
@@ -55,8 +61,7 @@ export async function deleteExpense(callbackQuery) {
 }
 
 async function handleDeleteCancel(callbackQuery) {
-  const chatId = callbackQuery.message.chat.id;
-  await sendMessage(chatId, '✅ Eliminación cancelada. No se ha eliminado ningún gasto.');
+  return;
 }
 
 async function handleDeleteConfirm(callbackQuery) {
@@ -84,6 +89,6 @@ async function handleDeleteConfirm(callbackQuery) {
     return;
   }
 
-  await sendMessage(chatId, '✅ Gasto eliminado con éxito.');
+  // await reactToMessage(chatId, messageId, '👍');
 }
 
