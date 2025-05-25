@@ -1,27 +1,40 @@
-import { waitingForResponse } from '../bot.js';
+import { bot, waitingForResponse } from '../bot.js';
 import { COMMAND } from '../constants/commands.js';
+import { reactToMessage } from '../helpers/reactToMessage.js';
 import { sendMessage } from '../helpers/sendMessage.js';
 import ExpenseCollection from '../queries/expenses.js';
 import UserCollection from '../queries/users.js';
 
+let messageToDeleteId;
+
 export async function onAdd(msg) {
   const chatId = msg.chat.id;
+  const messageId = msg.message_id;
   const userId = msg.from.id;
+
+  messageToDeleteId = messageId;
 
   waitingForResponse.set(userId, COMMAND.ADD);
 
-  await sendMessage(chatId, 'Ingrese el nuevo gasto ✏');
+  await reactToMessage(chatId, messageId, '👀');
 }
 
 export async function addExpense(msg) {
   const chatId = msg.chat.id;
+  const messageId = msg.message_id;
   const userId = msg.from.id;
   const username = msg.from.username;
 
   const { amount , desc } = getAmountAndDesc(msg.text); 
 
   if (!amount || !desc) {
-    await sendMessage(chatId, '❌ Formato incorrecto.');
+    await reactToMessage(chatId, messageId, '🤬');
+
+    setTimeout(() => {
+      bot.deleteMessage(chatId, messageId);
+      bot.deleteMessage(chatId, messageToDeleteId);
+    }, 3000);
+    
     return;
   }
 
@@ -44,7 +57,12 @@ export async function addExpense(msg) {
     return;
   }
 
-  await sendMessage(chatId, '✅ Nuevo gasto agregado con éxito.');
+  await reactToMessage(chatId, messageId, '👍');
+
+  setTimeout(() => {
+    bot.deleteMessage(chatId, messageId);
+    bot.deleteMessage(chatId, messageToDeleteId);
+  }, 3000);
 }
 
 function getAmountAndDesc(text) {
