@@ -7,6 +7,7 @@ import { COMMAND, COMMANDLIST } from './constants/commands.js';
 import { withAuth } from './helpers/auth.js';
 import {
   onAdd,
+  onCalculate,
   onCallbackQuery,
   onDelete,
   onEditSalary,
@@ -33,6 +34,7 @@ bot.onText(commandRegex(COMMAND.LIST), withAuth(onList));
 bot.onText(commandRegex(COMMAND.DELETE), withAuth(onDelete));
 bot.onText(commandRegex(COMMAND.EDITSALARY), withAuth(onEditSalary));
 bot.onText(commandRegex(COMMAND.SHOWUSERDETAILS), withAuth(onShowUserDetails));
+bot.onText(commandRegex(COMMAND.CALCULATE), withAuth(onCalculate));
 bot.onText(commandRegex(COMMAND.HELP), withAuth(onHelp));
 
 bot.on('message', withAuth(onMessage));

@@ -1,20 +1,27 @@
-import { waitingForResponse } from '../bot.js';
+import { bot, waitingForResponse } from '../bot.js';
 import { COMMAND } from '../constants/commands.js';
 import { anyError } from '../helpers/error.js';
+import { reactToMessage } from '../helpers/reactToMessage.js';
 import { sendMessage } from '../helpers/sendMessage.js';
 import UserCollection from '../queries/users.js';
 
+let messageToDeleteId;
+
 export async function onEditSalary(msg) {
   const chatId = msg.chat.id;
+  const messageId = msg.message_id;
   const userId = msg.from.id;
+
+  messageToDeleteId = messageId;
 
   waitingForResponse.set(userId, COMMAND.EDITSALARY);  
   
-  await sendMessage(chatId, 'Ingrese su nuevo salario ✏');
+  await reactToMessage(chatId, messageId, '👀');
 }
 
 export async function editSalary(msg) {
   const chatId = msg.chat.id;
+  const messageId = msg.message_id;
   const newSalary = parseInt(msg.text);
   const userId = msg.from.id.toString();
   
@@ -32,7 +39,12 @@ export async function editSalary(msg) {
     return; 
   }
 
-  await sendMessage(chatId, '✅ Su salario ha sido actualizado con éxito.');
+  await reactToMessage(chatId, messageId, '👍');
+
+  setTimeout(() => {
+    bot.deleteMessage(chatId, messageId);
+    bot.deleteMessage(chatId, messageToDeleteId);
+  }, 3000);
 }
 
 async function updatePercentages() {
