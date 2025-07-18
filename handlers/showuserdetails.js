@@ -21,7 +21,10 @@ function buildMessage(data) {
 
   for (const user of data) {
     for (const key of Object.keys(user._doc)) {
-      message += `${formatKey[key]}: ${formatValue[key](user[key])}\n`;
+      if (key === 'commandInserted' || key === 'lastMessageId') {
+        continue; // Skip these keys
+      }      
+      message += `${formatKey[key]}: ${formatValue[key](user._doc[key])}\n`;
     }
     message += '\n';
   }
@@ -35,6 +38,8 @@ const formatKey = {
   'totalExpenses': 'Gasto total',
   'contributionPercentage': 'Contribución',
   'amountDueToUser': 'Le deben',
+    'commandInserted': '',
+  'lastMessageId': '2507'
 };
 
 const formatValue = {
