@@ -4,7 +4,7 @@ import { sendMessage } from '../helpers/sendMessage.js';
 import { formatExpenseText } from '../helpers/expenses.js';
 import { reactToMessage } from '../helpers/reactToMessage.js';
 
-export let messageToDeleteId;
+let messageToDeleteId;
 
 export async function onDelete(msg) {
   const chatId = msg.chat.id;
@@ -51,6 +51,9 @@ function buildInlineKeyboard(data) {
 }
 
 export async function deleteExpense(callbackQuery) {
+  const chatId = callbackQuery.message.chat.id;
+  const messageId = callbackQuery.message.message_id;
+
   switch (callbackQuery.data) {
     case 'delete_cancel':
       await handleDeleteCancel(callbackQuery);
@@ -58,6 +61,18 @@ export async function deleteExpense(callbackQuery) {
     default:
       await handleDeleteConfirm(callbackQuery); 
   }
+
+  await bot.editMessageReplyMarkup(
+    { inline_keyboard: [] },
+    { chat_id: chatId, message_id: messageId }
+  );
+
+  bot.deleteMessage(chatId, messageId);
+  await reactToMessage(chatId, messageToDeleteId, '👍');
+
+  setTimeout(() => {
+    bot.deleteMessage(chatId, messageToDeleteId);
+  }, 3000);
 }
 
 async function handleDeleteCancel(callbackQuery) {

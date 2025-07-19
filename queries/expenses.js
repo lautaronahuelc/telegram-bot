@@ -16,21 +16,21 @@ async function remove(id) {
   }
 }
 
-/* async function deleteAllExpenses() {
+async function removeAll(userId) {
   try {
-    await Expense.deleteMany({});
+    await Expense.deleteMany(userId ? { userId } : {});
     return {
       data: {},
-      error: { message: null },
+      error: false,
     };
   } catch (err) {
     console.error('❌ Error deleting all expenses:', err);
     return {
       data: null,
-      error: { message: BOT_MESSAGES.EXPENSES.DELETING_ALL.ERROR },
+      error: true,
     };
   }
-} */
+}
 
 async function getAll(userId) {
   try {
@@ -71,7 +71,7 @@ async function create({
 const ExpenseCollection = {
   create,
   remove,
-  /* deleteAllExpenses, */
+  removeAll,
   getAll,
 };
 

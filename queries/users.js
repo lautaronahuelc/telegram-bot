@@ -69,25 +69,21 @@ async function incrementTotalExpenses(userId, amount) {
   }
 }
 
-/* async function resetUsersTotalExpenses() {
+async function resetUsersTotalExpenses(userId) {
   try {
-    await User.updateMany({}, { totalExpenses: 0 });
+    await User.updateOne({ userId }, { $set: { totalExpenses: 0 } });
     return {
+      data: {},
       error: false,
-      errorMessage: null,
-      success: true,
-      successMessage: BOT_MESSAGES.USER.TOTAL_EXPENSES.RESET.SUCCESS,
     };
   } catch (err) {
     console.error('❌ Error resetting totalExpenses:', err);
     return {
+      data: null,
       error: true,
-      errorMessage: BOT_MESSAGES.USER.TOTAL_EXPENSES.RESET.ERROR,
-      success: false,
-      successMessage: null,
     };
   }
-} */
+}
 
 async function updateContributionPercentage(userId, newPercentage) {
   try {
@@ -110,7 +106,7 @@ const UserCollection = {
   getAll,
   getSalaries,
   incrementTotalExpenses,
-  /* resetUsersTotalExpenses, */
+  resetUsersTotalExpenses,
   updateContributionPercentage,
 };
 
