@@ -37,13 +37,13 @@ const formatKey = {
   'salary': 'Ingresos',
   'totalExpenses': 'Gasto total',
   'contributionPercentage': 'Contribución',
-  'amountDueToUser': 'Le deben',
-    'commandInserted': '',
+  'amountDueToUser': 'Saldo a favor',
+  'commandInserted': '',
   'lastMessageId': '2507'
 };
 
 const formatValue = {
-  'username': (value) => `@${value}`,
+  'username': (value) => `${value}`,
   'salary': (value) => formatCurrency(value),
   'totalExpenses': (value) => formatCurrency(value),
   'contributionPercentage': (value) => formatPercentage(value),

@@ -33,7 +33,7 @@ function buildMessage(data) {
   let message = '';
 
   for (const user in groupedExpenses) {
-    message += `*Gastos de @${user}*\n${groupedExpenses[user].join('\n')}\n\n`;
+    message += `*Gastos de ${user}*\n${groupedExpenses[user].join('\n')}\n\n`;
   }
 
   return message;

@@ -1,11 +1,11 @@
 export const COMMAND = {
-  ADD: 'add',
-  LIST: 'list',
-  DELETE: 'delete',
-  EDITSALARY: 'editsalary',
-  SHOWUSERDETAILS: 'showuserdetails',
-  CALCULATE: 'calculate',
-  HELP: 'help',
+  ADD: 'nuevogasto',
+  LIST: 'vergastos',
+  DELETE: 'eliminaruno',
+  EDITSALARY: 'editarsalario',
+  SHOWUSERDETAILS: 'verusuarios',
+  CALCULATE: 'cierre',
+  HELP: 'ayuda',
 };
 
 export const COMMANDLIST = [

@@ -50,22 +50,22 @@ function buildMessage(highest, lowest) {
 
   const totalarecibir = max - min;
 
-  const calculationDetailsForHighest = `${lowest.contributionPercentage} x ${highest.totalExpenses}`;
-  const calculationDetailsForLowest = `${highest.contributionPercentage} x ${lowest.totalExpenses}`;
+  const calculationDetailsForHighest = `_${lowest.contributionPercentage} x ${formatCurrency(highest.totalExpenses)} = ${formatCurrency(shareForHighest)}_`;
+  const calculationDetailsForLowest = `_${highest.contributionPercentage} x ${formatCurrency(lowest.totalExpenses)} = ${formatCurrency(shareForLowest)}_`;
 
   let message = '*Cálculo de diferencias y cierre*\n\n';
 
   message += '*Gastos totales*\n';
-  message += `@${highest.username} gastó *${formatCurrency(highest.totalExpenses)}*.\n`;
-  message += `@${lowest.username} gastó *${formatCurrency(lowest.totalExpenses)}*.\n\n`;
+  message += `*${highest.username}* gastó _${formatCurrency(highest.totalExpenses)}_\n`;
+  message += `*${lowest.username}* gastó _${formatCurrency(lowest.totalExpenses)}_\n\n`;
   
   message += '*Balance*\n';
   message += 'Por sus gastos, cada usuario recibiría:\n';
-  message += `@${highest.username} *${formatCurrency(shareForHighest)}*. (${calculationDetailsForHighest})\n`;
-  message += `@${lowest.username} *${formatCurrency(shareForLowest)}*. (${calculationDetailsForLowest})\n\n`;
+  message += `*${highest.username}* ⬅ ${calculationDetailsForHighest}\n`;
+  message += `*${lowest.username}* ⬅ ${calculationDetailsForLowest}\n\n`;
   
   message += '*Diferencia*\n';
-  message += `@${personaquerecibe} recibe *${formatCurrency(totalarecibir)}*`;
+  message += `*${personaquerecibe}* recibe _${formatCurrency(totalarecibir)}_`;
 
   return message;
 }
