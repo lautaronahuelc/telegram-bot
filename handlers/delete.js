@@ -3,6 +3,7 @@ import UserCollection from '../queries/users.js';
 import { sendMessage } from '../helpers/sendMessage.js';
 import { formatExpenseText } from '../helpers/expenses.js';
 import { reactToMessage } from '../helpers/reactToMessage.js';
+import { bot } from '../bot.js';
 
 let messageToDeleteId;
 
