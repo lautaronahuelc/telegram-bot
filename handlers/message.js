@@ -10,8 +10,8 @@ export async function onMessage(msg) {
   if (isCommand(text)) return;
   const command = waitingForResponse.get(userId);
   if (!command) return;
-  handleCommand(command, msg);
   waitingForResponse.delete(userId);
+  await handleCommand(command, msg);
 }
 
 async function handleCommand(command, msg) {

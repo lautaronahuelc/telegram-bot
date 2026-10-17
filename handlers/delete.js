@@ -57,7 +57,7 @@ export async function deleteExpense(callbackQuery) {
 
   switch (callbackQuery.data) {
     case 'delete_cancel':
-      await handleDeleteCancel(callbackQuery);
+      // Cancelar: sólo se quita el teclado.
       break;
     default:
       await handleDeleteConfirm(callbackQuery); 
@@ -74,10 +74,6 @@ export async function deleteExpense(callbackQuery) {
   setTimeout(() => {
     bot.deleteMessage(chatId, messageToDeleteId);
   }, 3000);
-}
-
-async function handleDeleteCancel(callbackQuery) {
-  return;
 }
 
 async function handleDeleteConfirm(callbackQuery) {

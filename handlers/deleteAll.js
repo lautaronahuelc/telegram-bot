@@ -36,7 +36,7 @@ export async function deleteAllExpenses(callbackQuery) {
 
   switch (callbackQuery.data) {
     case 'deleteall_cancel':
-      await handleDeleteCancel(callbackQuery);
+      // Cancelar: sólo se quita el teclado.
       break;
     default:
       await handleDeleteConfirm(callbackQuery); 
@@ -55,15 +55,11 @@ export async function deleteAllExpenses(callbackQuery) {
   }, 3000);
 }
 
-async function handleDeleteCancel(callbackQuery) {
-  return;
-}
-
 async function handleDeleteConfirm(callbackQuery) {
   const chatId = callbackQuery.message.chat.id;
   const userId = callbackQuery.from.id;
 
-  const { data: rData, error: rError } = await ExpenseCollection.removeAll(userId);
+  const { error: rError } = await ExpenseCollection.removeAll(userId);
 
   if (rError) {
     await sendMessage(chatId, '❌ Ocurrió un error al eliminar los gastos.');

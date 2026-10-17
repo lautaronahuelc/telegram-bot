@@ -7,10 +7,10 @@ Toda la interfaz con el usuario está en **español (Argentina)** y los montos s
 ## Stack
 
 - **Node.js** con ES Modules (`"type": "module"`, imports con extensión `.js`)
-- **node-telegram-bot-api** en modo *polling* (no usa webhooks)
+- **node-telegram-bot-api** en modo _polling_ (no usa webhooks)
 - **MongoDB + Mongoose**
 - **dotenv** + **cross-env** para variables de entorno, **nodemon** para correr
-- Tests con el runner nativo `node:test` (`npm test`), sin linter, sin TypeScript
+- Tests con el runner nativo `node:test`, **ESLint** (flat config) y **Prettier**. Sin TypeScript ni build: Node ejecuta el código tal cual.
 
 ## Cómo correrlo
 
@@ -21,16 +21,34 @@ npm run dev            # NODE_ENV=development → usa *_TEST (bot y base de prue
 npm start              # NODE_ENV=production → usa BOT_TOKEN / MONGO_URI reales
 ```
 
+### Calidad de código
+
+| Script                 | Qué hace                                                                   |
+| ---------------------- | -------------------------------------------------------------------------- |
+| `npm run check`        | Lint + verificación de formato + tests. **Correrlo antes de cada commit.** |
+| `npm test`             | Tests de `test/*.test.js` con `node --test`                                |
+| `npm run lint`         | ESLint (`eslint.config.js`)                                                |
+| `npm run lint:fix`     | ESLint con autocorrección                                                  |
+| `npm run format`       | Prettier reescribe todos los archivos                                      |
+| `npm run format:check` | Prettier sólo verifica, sin escribir (lo usa `check`)                      |
+
+Configuración:
+
+- **`eslint.config.js`**: `@eslint/js` recommended + globals de Node, más `no-unused-vars` (los argumentos que empiezan con `_` se permiten), `require-await`, `eqeqeq` y `prefer-const`. `eslint-config-prettier` va último y desactiva las reglas de estilo, así ESLint no se pisa con Prettier: **ESLint marca bugs, Prettier decide el formato**.
+- **`.prettierrc.json`**: comillas simples, `printWidth` 100, fin de línea LF. El resto son los defaults de Prettier 3 (punto y coma, 2 espacios, trailing commas). `.prettierignore` excluye `node_modules/` y `package-lock.json`.
+- **`.gitattributes`** (`* text=auto eol=lf`): fuerza LF en el working copy aunque Windows tenga `core.autocrlf=true`. Sin esto, Prettier marcaría todos los archivos por CRLF.
+- No hay hooks de pre-commit ni CI: `npm run check` se corre a mano.
+
 Variables (`.env.example`):
 
-| Variable | Uso |
-|---|---|
-| `AUTHORIZED_USERS` | Array JSON de IDs de Telegram como strings, ej. `["123","456"]`. Se parsea con `JSON.parse`. |
-| `BOT_TOKEN` / `BOT_TOKEN_TEST` | Token de BotFather (prod / dev) |
-| `BOT_USERNAME` / `BOT_USERNAME_TEST` | Username del bot, para reconocer `/comando@bot` en grupos |
-| `MONGO_URI` / `MONGO_URI_TEST` | Conexión a MongoDB |
+| Variable                             | Uso                                                                                          |
+| ------------------------------------ | -------------------------------------------------------------------------------------------- |
+| `AUTHORIZED_USERS`                   | Array JSON de IDs de Telegram como strings, ej. `["123","456"]`. Se parsea con `JSON.parse`. |
+| `BOT_TOKEN` / `BOT_TOKEN_TEST`       | Token de BotFather (prod / dev)                                                              |
+| `BOT_USERNAME` / `BOT_USERNAME_TEST` | Username del bot, para reconocer `/comando@bot` en grupos                                    |
+| `MONGO_URI` / `MONGO_URI_TEST`       | Conexión a MongoDB                                                                           |
 
-`config/env.js` elige el set según `NODE_ENV` y sólo *advierte* (no falla) si falta alguna.
+`config/env.js` elige el set según `NODE_ENV` y sólo _advierte_ (no falla) si falta alguna.
 
 ## Estructura
 
@@ -44,6 +62,7 @@ helpers/               Utilidades: auth, envío de mensajes, reacciones, formato
 lib/                   Lógica pura sin Telegram ni Mongo: settlement.js (cierre), expenseInput.js
                        (parseo de "<monto> <desc>"), contribution.js (porcentajes)
 test/                  Tests de lib/ con node:test (`npm test`)
+eslint.config.js       Configuración de ESLint; .prettierrc.json / .prettierignore para Prettier
 models/                Schemas de Mongoose (User, Expense)
 queries/               Capa de acceso a datos. Envuelven Mongoose y devuelven { data, error }
 ```
@@ -62,6 +81,7 @@ Telegram ──polling──> bot.onText(regex) ──> withAuth(handler) ──
 ### Comandos de dos pasos (estado conversacional)
 
 `/nuevogasto` y `/editarsalario` no reciben argumentos. El handler:
+
 1. Guarda `waitingForResponse.set(userId, COMMAND.X)` y reacciona 👀.
 2. El **siguiente mensaje** del usuario lo captura `handlers/message.js` (`bot.on('message')`), que despacha a `addExpense` o `editSalary` y borra el estado.
 
@@ -77,16 +97,16 @@ Tras completar una acción, los handlers borran el mensaje del comando y la resp
 
 ## Comandos
 
-| Comando | Handler | Qué hace |
-|---|---|---|
-| `/nuevogasto` | `add.js` | Espera un mensaje `"<monto> <descripción>"` (ej. `5000 supermercado`). Crea el Expense y suma a `User.totalExpenses`. Monto entero. |
-| `/vergastos` | `list.js` | Lista los gastos de todos, agrupados por usuario. |
-| `/eliminaruno` | `delete.js` | Teclado con los gastos *propios*; elimina uno y resta de `totalExpenses`. |
-| `/eliminartodo` | `deleteAll.js` | Confirmación; borra todos los gastos *del usuario que lo ejecuta* y pone su `totalExpenses` en 0. |
-| `/editarsalario` | `editsalary.js` | Espera un número; actualiza el salario y recalcula `contributionPercentage` de **todos** los usuarios. |
-| `/verusuarios` | `showuserdetails.js` | Muestra los documentos User formateados. |
-| `/cierre` | `calculate.js` | Cálculo de liquidación (ver abajo). |
-| `/ayuda` | `help.js` | Lista de comandos desde `COMMANDLIST`. |
+| Comando          | Handler              | Qué hace                                                                                                                            |
+| ---------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `/nuevogasto`    | `add.js`             | Espera un mensaje `"<monto> <descripción>"` (ej. `5000 supermercado`). Crea el Expense y suma a `User.totalExpenses`. Monto entero. |
+| `/vergastos`     | `list.js`            | Lista los gastos de todos, agrupados por usuario.                                                                                   |
+| `/eliminaruno`   | `delete.js`          | Teclado con los gastos _propios_; elimina uno y resta de `totalExpenses`.                                                           |
+| `/eliminartodo`  | `deleteAll.js`       | Confirmación; borra todos los gastos _del usuario que lo ejecuta_ y pone su `totalExpenses` en 0.                                   |
+| `/editarsalario` | `editsalary.js`      | Espera un número; actualiza el salario y recalcula `contributionPercentage` de **todos** los usuarios.                              |
+| `/verusuarios`   | `showuserdetails.js` | Muestra los documentos User formateados.                                                                                            |
+| `/cierre`        | `calculate.js`       | Cálculo de liquidación (ver abajo).                                                                                                 |
+| `/ayuda`         | `help.js`            | Lista de comandos desde `COMMANDLIST`.                                                                                              |
 
 ### Agregar un comando nuevo
 
@@ -99,6 +119,7 @@ Tras completar una acción, los handlers borran el mensaje del comando y la resp
 ## Modelo de datos
 
 **User** (`models/users.js`) — los usuarios **se crean a mano en la base**; no hay comando de registro.
+
 - `userId` (String, ID de Telegram), `username`
 - `salary` — ingreso
 - `contributionPercentage` — `salary / sum(salaries)`, redondeado a 4 decimales; se recalcula al editar salario
@@ -126,6 +147,9 @@ Ejemplo: A gana 60%, B 40%. A gastó 100.000, B gastó 50.000 → A recibe 0,4×
 - Las reacciones se envían con `fetch` directo a la API de Telegram (`helpers/reactToMessage.js`) porque la librería no expone `setMessageReaction`.
 - Markdown de Telegram (legacy): cursiva con `_`, negrita con `*`.
 - Archivos de handlers en minúsculas sin separadores (`editsalary.js`, `showuserdetails.js`), salvo `deleteAll.js` y `callbackQuery.js`.
+- El formato lo define Prettier: no formatear a mano; correr `npm run format`.
+- No dejar variables, imports ni argumentos sin usar (ESLint falla). Si un argumento es obligatorio por la firma, prefijarlo con `_`.
+- Una función `async` tiene que tener algún `await` (`require-await`); si no lo necesita, que no sea `async`.
 
 ## Problemas conocidos / deuda técnica
 
@@ -134,7 +158,7 @@ Tenerlos en cuenta antes de modificar código cercano:
 - **`messageToDeleteId` es una variable de módulo** en `add.js`, `delete.js`, `deleteAll.js`, `editsalary.js`: si dos usuarios usan el mismo comando a la vez, se pisa y se borra el mensaje equivocado.
 - **`list.js` y `delete.js` chequean `data.length` antes que `error`**: si la query falla (`data: null`) el handler lanza una excepción.
 - **`editSalary` no valida el número**: `parseInt("abc")` → `NaN` se guarda como salario.
-- **`handlers/message.js` no hace `await` de `handleCommand`**: los errores ahí quedan como promesas rechazadas sin manejar.
+- **Los handlers no tienen `try/catch`**: `bot.on`/`bot.onText` ignoran la promesa que devuelve el handler, así que una excepción en un handler queda como promesa rechazada sin manejar.
 - **`showuserdetails.js`** itera todas las claves del documento; un campo sin entrada en `formatValue` (ej. `__v` si el documento lo tiene) rompe el comando.
 - **`/cierre` sólo funciona bien con dos usuarios.**
 - **`totalExpenses` puede desincronizarse** de la colección Expense si falla el segundo paso de alta/baja (no hay transacciones).

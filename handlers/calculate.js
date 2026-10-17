@@ -5,7 +5,6 @@ import UserCollection from '../queries/users.js';
 
 export async function onCalculate(msg) {
   const chatId = msg.chat.id;
-  const userId = msg.from.id;
 
   const { data, error } = await UserCollection.getAll();
 
