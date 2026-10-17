@@ -32,14 +32,16 @@ test('salarios iguales → 50% cada uno', () => {
     { userId: 'b', salary: 500 },
   ]);
 
-  assert.deepEqual(result.map((u) => u.contributionPercentage), [0.5, 0.5]);
+  assert.deepEqual(
+    result.map((u) => u.contributionPercentage),
+    [0.5, 0.5],
+  );
 });
 
 test('un único usuario aporta el 100%', () => {
-  assert.deepEqual(
-    calculateContributionPercentages([{ userId: 'a', salary: 1000 }]),
-    [{ userId: 'a', contributionPercentage: 1 }],
-  );
+  assert.deepEqual(calculateContributionPercentages([{ userId: 'a', salary: 1000 }]), [
+    { userId: 'a', contributionPercentage: 1 },
+  ]);
 });
 
 test('lista vacía → lista vacía', () => {

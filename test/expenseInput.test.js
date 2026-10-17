@@ -9,7 +9,10 @@ test('parsea monto y descripción', () => {
 });
 
 test('la descripción puede tener varias palabras', () => {
-  assert.deepEqual(parseExpenseInput('1200 cena con amigos'), { amount: 1200, desc: 'cena con amigos' });
+  assert.deepEqual(parseExpenseInput('1200 cena con amigos'), {
+    amount: 1200,
+    desc: 'cena con amigos',
+  });
 });
 
 test('acepta varios espacios entre monto y descripción', () => {

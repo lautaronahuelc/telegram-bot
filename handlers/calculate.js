@@ -27,12 +27,12 @@ function buildMessage({ highest, lowest, shareForHighest, shareForLowest, receiv
   message += '*Gastos totales*\n';
   message += `*${highest.username}* gastó _${formatCurrency(highest.totalExpenses)}_\n`;
   message += `*${lowest.username}* gastó _${formatCurrency(lowest.totalExpenses)}_\n\n`;
-  
+
   message += '*Balance*\n';
   message += 'Por sus gastos, cada usuario recibiría:\n';
   message += `*${highest.username}* ⬅ ${calculationDetailsForHighest}\n`;
   message += `*${lowest.username}* ⬅ ${calculationDetailsForLowest}\n\n`;
-  
+
   message += '*Diferencia*\n';
   message += `*${receiver.username}* recibe _${formatCurrency(amount)}_`;
 

@@ -35,7 +35,7 @@ export async function addExpense(msg) {
       bot.deleteMessage(chatId, messageId);
       bot.deleteMessage(chatId, messageToDeleteId);
     }, 3000);
-    
+
     return;
   }
 
@@ -43,7 +43,7 @@ export async function addExpense(msg) {
     amount,
     desc,
     userId,
-    username
+    username,
   });
 
   if (neError) {
@@ -54,7 +54,10 @@ export async function addExpense(msg) {
   const { error: iteError } = await UserCollection.incrementTotalExpenses(userId, amount);
 
   if (iteError) {
-    await sendMessage(chatId, '❌ Ocurrió un error al actualizar los gastos totales. Eliminar el último gasto ingresado para evitar errores de cálculo.');
+    await sendMessage(
+      chatId,
+      '❌ Ocurrió un error al actualizar los gastos totales. Eliminar el último gasto ingresado para evitar errores de cálculo.',
+    );
     return;
   }
 

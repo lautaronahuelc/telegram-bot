@@ -60,12 +60,12 @@ export async function deleteExpense(callbackQuery) {
       // Cancelar: sólo se quita el teclado.
       break;
     default:
-      await handleDeleteConfirm(callbackQuery); 
+      await handleDeleteConfirm(callbackQuery);
   }
 
   await bot.editMessageReplyMarkup(
     { inline_keyboard: [] },
-    { chat_id: chatId, message_id: messageId }
+    { chat_id: chatId, message_id: messageId },
   );
 
   bot.deleteMessage(chatId, messageId);
@@ -96,11 +96,10 @@ async function handleDeleteConfirm(callbackQuery) {
     await sendMessage(
       chatId,
       `❌ Ocurrió un error al actualizar los gastos totales. Agregar el gasto eliminado para evitar errores de cálculo.\n\n*Gasto elminado*\n${formatExpenseText(amount, desc)}`,
-      { parse_mode: 'Markdown' }
+      { parse_mode: 'Markdown' },
     );
     return;
   }
 
   // await reactToMessage(chatId, messageId, '👍');
 }
-

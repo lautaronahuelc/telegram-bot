@@ -15,8 +15,8 @@ export async function onEditSalary(msg) {
 
   messageToDeleteId = messageId;
 
-  waitingForResponse.set(userId, COMMAND.EDITSALARY);  
-  
+  waitingForResponse.set(userId, COMMAND.EDITSALARY);
+
   await reactToMessage(chatId, messageId, '👀');
 }
 
@@ -25,7 +25,7 @@ export async function editSalary(msg) {
   const messageId = msg.message_id;
   const newSalary = parseInt(msg.text);
   const userId = msg.from.id.toString();
-  
+
   const { data, error } = await UserCollection.editSalary(userId, newSalary);
 
   if (error || !data) {
@@ -37,7 +37,7 @@ export async function editSalary(msg) {
 
   if (upError) {
     await sendMessage(chatId, upError);
-    return; 
+    return;
   }
 
   await reactToMessage(chatId, messageId, '👍');
@@ -52,15 +52,17 @@ async function updatePercentages() {
   const { data, error } = await UserCollection.getSalaries();
 
   if (error || !data.length) {
-    return '❌ Error al actualizar porcentaje de los usuarios. Intente nuevamente más tarde.'
+    return '❌ Error al actualizar porcentaje de los usuarios. Intente nuevamente más tarde.';
   }
 
-  const promises = calculateContributionPercentages(data).map(({ userId, contributionPercentage }) => {
-    return UserCollection.updateContributionPercentage(userId, contributionPercentage);
-  });
-  
+  const promises = calculateContributionPercentages(data).map(
+    ({ userId, contributionPercentage }) => {
+      return UserCollection.updateContributionPercentage(userId, contributionPercentage);
+    },
+  );
+
   const updatingPercentages = await Promise.all(promises);
-  
+
   if (anyError(...updatingPercentages)) {
     return '❌ Error al actualizar porcentaje de los usuarios. Intente nuevamente más tarde.';
   }

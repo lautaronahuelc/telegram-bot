@@ -9,7 +9,10 @@ function isAuthorized(id) {
 export function withAuth(handler) {
   return async (msg, match) => {
     if (!isAuthorized(msg.from.id)) {
-      return await bot.sendMessage(msg.chat.id, '¡Lo siento! No estás autorizado para usar este bot.');
+      return await bot.sendMessage(
+        msg.chat.id,
+        '¡Lo siento! No estás autorizado para usar este bot.',
+      );
     }
     return handler(msg, match);
   };

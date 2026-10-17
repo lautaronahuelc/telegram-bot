@@ -2,7 +2,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { calculateSettlement, pickHighestAndLowest } from '../lib/settlement.js';
 
-const user = (username, contributionPercentage, totalExpenses) => ({ username, contributionPercentage, totalExpenses });
+const user = (username, contributionPercentage, totalExpenses) => ({
+  username,
+  contributionPercentage,
+  totalExpenses,
+});
 
 test('ejemplo de CLAUDE.md: A (60%) gastó 100.000, B (40%) gastó 50.000 → A recibe 10.000', () => {
   const a = user('A', 0.6, 100000);

@@ -4,7 +4,7 @@ import { deleteAllExpenses } from './deleteAll.js';
 
 export async function onCallbackQuery(callbackQuery) {
   const data = callbackQuery.data;
-  
+
   if (data.startsWith('deleteall_')) await deleteAllExpenses(callbackQuery);
   if (data.startsWith('delete_')) await deleteExpense(callbackQuery);
 

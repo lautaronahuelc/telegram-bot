@@ -25,10 +25,12 @@ export const waitingForResponse = new Map();
 
 export const bot = new TelegramBot(envConfig.BOT_TOKEN, { polling: true });
 
-bot.setMyCommands(COMMANDLIST.map(({ name, desc }) => ({
-  command: name,
-  description: desc,
-})));
+bot.setMyCommands(
+  COMMANDLIST.map(({ name, desc }) => ({
+    command: name,
+    description: desc,
+  })),
+);
 
 bot.onText(commandRegex(COMMAND.ADD), withAuth(onAdd));
 bot.onText(commandRegex(COMMAND.LIST), withAuth(onList));

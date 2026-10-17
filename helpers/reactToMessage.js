@@ -1,6 +1,6 @@
 import { envConfig } from '../config/env.js';
 
-envConfig
+envConfig;
 
 export async function reactToMessage(chatId, messageId, emoji) {
   const url = `https://api.telegram.org/bot${envConfig.BOT_TOKEN}/setMessageReaction`;

@@ -39,12 +39,12 @@ export async function deleteAllExpenses(callbackQuery) {
       // Cancelar: sólo se quita el teclado.
       break;
     default:
-      await handleDeleteConfirm(callbackQuery); 
+      await handleDeleteConfirm(callbackQuery);
   }
-  
+
   await bot.editMessageReplyMarkup(
     { inline_keyboard: [] },
-    { chat_id: chatId, message_id: messageId }
+    { chat_id: chatId, message_id: messageId },
   );
 
   bot.deleteMessage(chatId, messageId);
@@ -69,14 +69,11 @@ async function handleDeleteConfirm(callbackQuery) {
   const { error: iteError } = await UserCollection.resetUsersTotalExpenses(userId, 0);
 
   if (iteError) {
-    await sendMessage(
-      chatId,
-      `❌ Ocurrió un error al actualizar los gastos totales`,
-      { parse_mode: 'Markdown' }
-    );
+    await sendMessage(chatId, `❌ Ocurrió un error al actualizar los gastos totales`, {
+      parse_mode: 'Markdown',
+    });
     return;
   }
 
   // await reactToMessage(chatId, messageId, '👍');
 }
-
