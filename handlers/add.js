@@ -1,5 +1,6 @@
 import { bot, waitingForResponse } from '../bot.js';
 import { COMMAND } from '../constants/commands.js';
+import { parseExpenseInput } from '../lib/expenseInput.js';
 import { reactToMessage } from '../helpers/reactToMessage.js';
 import { sendMessage } from '../helpers/sendMessage.js';
 import ExpenseCollection from '../queries/expenses.js';
@@ -25,7 +26,7 @@ export async function addExpense(msg) {
   const userId = msg.from.id;
   const username = msg.from.username;
 
-  const { amount , desc } = getAmountAndDesc(msg.text); 
+  const { amount, desc } = parseExpenseInput(msg.text);
 
   if (!amount || !desc) {
     await reactToMessage(chatId, messageId, '🤬');
@@ -63,17 +64,4 @@ export async function addExpense(msg) {
     bot.deleteMessage(chatId, messageId);
     bot.deleteMessage(chatId, messageToDeleteId);
   }, 3000);
-}
-
-function getAmountAndDesc(text) {
-  const match = text.match(/^(\d+)\s+(.+)/);
-
-  if (!match) {
-    return { amount: null, desc: null };
-  }
-  
-  const amount = parseInt(match[1]);
-  const desc = match[2];
-  
-  return { amount, desc };
 }

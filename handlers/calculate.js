@@ -1,4 +1,5 @@
 import { formatCurrency } from '../helpers/currency.js';
+import { calculateSettlement } from '../lib/settlement.js';
 import { sendMessage } from '../helpers/sendMessage.js';
 import UserCollection from '../queries/users.js';
 
@@ -13,43 +14,12 @@ export async function onCalculate(msg) {
     return;
   }
 
-  const highest = calculateHighest(data);
-  const lowest = calculateLowest(data);
-
-  const message = buildMessage(highest, lowest);
+  const message = buildMessage(calculateSettlement(data));
 
   await sendMessage(chatId, message, { parse_mode: 'Markdown' });
 }
 
-function calculateHighest(data) {
-  return data.reduce((highest, current) => {
-    return current.totalExpenses > (highest.totalExpenses || 0) ? current : highest;
-  }, {});
-}
-
-function calculateLowest(data) {
-  return data.reduce((lowest, current) => {
-    return (lowest.totalExpenses === undefined || current.totalExpenses < lowest.totalExpenses) 
-      ? current 
-      : lowest;
-  }, {});
-}
-
-function calculateExpenseShare(contributionPercentage, totalExpenses) {
-  return contributionPercentage * totalExpenses;
-}
-
-function buildMessage(highest, lowest) {
-  const shareForHighest = calculateExpenseShare(lowest.contributionPercentage, highest.totalExpenses);
-  const shareForLowest = calculateExpenseShare(highest.contributionPercentage, lowest.totalExpenses);
-
-  const max = Math.max(shareForHighest, shareForLowest);
-  const min = Math.min(shareForHighest, shareForLowest);
-
-  let personaquerecibe = max === shareForHighest ? highest.username : lowest.username;
-
-  const totalarecibir = max - min;
-
+function buildMessage({ highest, lowest, shareForHighest, shareForLowest, receiver, amount }) {
   const calculationDetailsForHighest = `_${lowest.contributionPercentage} x ${formatCurrency(highest.totalExpenses)} = ${formatCurrency(shareForHighest)}_`;
   const calculationDetailsForLowest = `_${highest.contributionPercentage} x ${formatCurrency(lowest.totalExpenses)} = ${formatCurrency(shareForLowest)}_`;
 
@@ -65,7 +35,7 @@ function buildMessage(highest, lowest) {
   message += `*${lowest.username}* ⬅ ${calculationDetailsForLowest}\n\n`;
   
   message += '*Diferencia*\n';
-  message += `*${personaquerecibe}* recibe _${formatCurrency(totalarecibir)}_`;
+  message += `*${receiver.username}* recibe _${formatCurrency(amount)}_`;
 
   return message;
 }
