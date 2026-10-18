@@ -9,7 +9,7 @@ Toda la interfaz con el usuario está en **español (Argentina)** y los montos s
 - **Node.js** con ES Modules (`"type": "module"`, imports con extensión `.js`)
 - **node-telegram-bot-api** en modo _polling_ (no usa webhooks)
 - **MongoDB + Mongoose**
-- **dotenv** + **cross-env** para variables de entorno, **nodemon** para correr
+- **dotenv** + **cross-env** para variables de entorno. En dev, `node --watch` reinicia al cambiar archivos (sin nodemon)
 - Tests con el runner nativo `node:test`, **ESLint** (flat config) y **Prettier**. Sin TypeScript ni build: Node ejecuta el código tal cual.
 
 ## Cómo correrlo
@@ -17,8 +17,8 @@ Toda la interfaz con el usuario está en **español (Argentina)** y los montos s
 ```bash
 npm install
 cp .env.example .env   # completar valores
-npm run dev            # NODE_ENV=development → usa *_TEST (bot y base de prueba)
-npm start              # NODE_ENV=production → usa BOT_TOKEN / MONGO_URI reales
+npm run dev            # NODE_ENV=development → usa *_TEST (bot y base de prueba), con node --watch
+npm start              # NODE_ENV=production → usa BOT_TOKEN / MONGO_URI reales, con node a secas
 ```
 
 ### Calidad de código
@@ -168,7 +168,7 @@ Ejemplo: A gana 60%, B 40%. A gastó 100.000, B gastó 50.000 → A recibe 0,4×
 ### Dependencias
 
 - `npm audit fix` **sin** `--force` está bien: respeta los rangos de `package.json`. Después hay que verificar con `npm run check` y probar en el bot.
-- **No usar `npm audit fix --force`.** Hace downgrade de nodemon a 1.14.10, una versión de 2018, y sube `node-telegram-bot-api` de 0.66 a 2.x, una reescritura con cambios incompatibles.
+- **No usar `npm audit fix --force`.** Sube `node-telegram-bot-api` de 0.66 a 2.x, una reescritura con cambios incompatibles.
 - Las actualizaciones de versión mayor se hacen a mano, en su propia rama, después de leer el changelog.
 
 ## Problemas conocidos / deuda técnica
@@ -184,6 +184,5 @@ Tenerlos en cuenta antes de modificar código cercano:
 - **`totalExpenses` puede desincronizarse** de la colección Expense si falla el segundo paso de alta/baja (no hay transacciones).
 - `/eliminartodo` dice "Eliminar todos los gastos" pero sólo borra los del usuario que lo ejecuta.
 - `helpers/deleteall.js` es código muerto (todo comentado).
-- `npm start` usa `nodemon` también en producción. Además, nodemon trae las vulnerabilidades de `chokidar`/`braces` que marca `npm audit`.
 - **`node-telegram-bot-api` 0.66 depende de `request`**, una librería deprecada. De ahí vienen la mayoría de las vulnerabilidades de `npm audit`, incluidas las críticas de `form-data`. Se resuelve migrando a 2.x (ver _Dependencias_).
 - Los tests sólo cubren `lib/`: los handlers y queries se verifican corriendo el bot de prueba (`npm run dev`) en Telegram. Nueva lógica pura → va en `lib/` con su test.
