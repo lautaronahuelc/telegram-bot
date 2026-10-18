@@ -144,7 +144,7 @@ Ejemplo: A gana 60%, B 40%. A gastó 100.000, B gastó 50.000 → A recibe 0,4×
 
 - Las funciones de `queries/` nunca lanzan: devuelven `{ data, error }` y loguean con `console.error('❌ ...')`. Los handlers chequean `error` y responden con un mensaje de error en español.
 - Los mensajes de error para el usuario empiezan con `❌`.
-- Las reacciones se envían con `fetch` directo a la API de Telegram (`helpers/reactToMessage.js`) porque la librería no expone `setMessageReaction`.
+- Las reacciones se envían con `bot.setMessageReaction` desde `helpers/reactToMessage.js`, que nunca lanza: loguea el error y sigue (igual que `helpers/sendMessage.js`).
 - Markdown de Telegram (legacy): cursiva con `_`, negrita con `*`.
 - Archivos de handlers en minúsculas sin separadores (`editsalary.js`, `showuserdetails.js`), salvo `deleteAll.js` y `callbackQuery.js`.
 - El formato lo define Prettier: no formatear a mano; correr `npm run format`.
