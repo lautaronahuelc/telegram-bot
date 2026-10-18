@@ -23,7 +23,7 @@ function buildMessage(data) {
     for (const key of Object.keys(user._doc)) {
       if (key === 'commandInserted' || key === 'lastMessageId') {
         continue; // Skip these keys
-      }      
+      }
       message += `${formatKey[key]}: ${formatValue[key](user._doc[key])}\n`;
     }
     message += '\n';
@@ -33,26 +33,26 @@ function buildMessage(data) {
 }
 
 const formatKey = {
-  'username': 'Usuario',
-  'salary': 'Ingresos',
-  'totalExpenses': 'Gasto total',
-  'contributionPercentage': 'Contribución',
-  'amountDueToUser': 'Saldo a favor',
-  'commandInserted': '',
-  'lastMessageId': '2507'
+  username: 'Usuario',
+  salary: 'Ingresos',
+  totalExpenses: 'Gasto total',
+  contributionPercentage: 'Contribución',
+  amountDueToUser: 'Saldo a favor',
+  commandInserted: '',
+  lastMessageId: '2507',
 };
 
 const formatValue = {
-  'username': (value) => `${value}`,
-  'salary': (value) => formatCurrency(value),
-  'totalExpenses': (value) => formatCurrency(value),
-  'contributionPercentage': (value) => formatPercentage(value),
-  'amountDueToUser': (value) => formatCurrency(value),
+  username: (value) => `${value}`,
+  salary: (value) => formatCurrency(value),
+  totalExpenses: (value) => formatCurrency(value),
+  contributionPercentage: (value) => formatPercentage(value),
+  amountDueToUser: (value) => formatCurrency(value),
 };
 
 function formatPercentage(value) {
-  return value.toLocaleString("es-AR", {
-    style: "percent",
+  return value.toLocaleString('es-AR', {
+    style: 'percent',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });

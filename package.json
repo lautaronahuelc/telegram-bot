@@ -6,7 +6,12 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon bot.js",
     "start": "cross-env NODE_ENV=production nodemon bot.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run lint && npm run format:check && npm test"
   },
   "author": "",
   "license": "ISC",
@@ -17,7 +22,12 @@
     "node-telegram-bot-api": "^0.66.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "cross-env": "^7.0.3",
-    "nodemon": "^3.1.9"
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.13.0",
+    "nodemon": "^3.1.9",
+    "prettier": "^3.9.10"
   }
 }
