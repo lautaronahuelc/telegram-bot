@@ -7,7 +7,7 @@ Toda la interfaz con el usuario está en **español (Argentina)** y los montos s
 ## Stack
 
 - **Node.js** con ES Modules (`"type": "module"`, imports con extensión `.js`)
-- **node-telegram-bot-api** en modo _polling_ (no usa webhooks)
+- **node-telegram-bot-api 1.x** en modo _polling_ (no usa webhooks). Requiere Node ≥ 18
 - **MongoDB + Mongoose**
 - **dotenv** + **cross-env** para variables de entorno. En dev, `node --watch` reinicia al cambiar archivos (sin nodemon)
 - Tests con el runner nativo `node:test`, **ESLint** (flat config) y **Prettier**. Sin TypeScript ni build: Node ejecuta el código tal cual.
@@ -168,7 +168,8 @@ Ejemplo: A gana 60%, B 40%. A gastó 100.000, B gastó 50.000 → A recibe 0,4×
 ### Dependencias
 
 - `npm audit fix` **sin** `--force` está bien: respeta los rangos de `package.json`. Después hay que verificar con `npm run check` y probar en el bot.
-- **No usar `npm audit fix --force`.** Sube `node-telegram-bot-api` de 0.66 a 2.x, una reescritura con cambios incompatibles.
+- **No usar `npm audit fix --force`.** Puede saltar de versión mayor sin avisar.
+- `node-telegram-bot-api` queda en `^1`: la 1.x mantiene la API de `TelegramBot` (`onText`, `on`, `sendMessage(chatId, text, opts)`, etc.). La **2.x es una reescritura sin compatibilidad** (`Bot` + middleware, `bot.api.*` con un objeto de parámetros, `hears` en vez de `onText`): migrar a 2.x implica tocar `bot.js`, `helpers/` y los handlers.
 - Las actualizaciones de versión mayor se hacen a mano, en su propia rama, después de leer el changelog.
 
 ## Problemas conocidos / deuda técnica
@@ -184,5 +185,4 @@ Tenerlos en cuenta antes de modificar código cercano:
 - **`totalExpenses` puede desincronizarse** de la colección Expense si falla el segundo paso de alta/baja (no hay transacciones).
 - `/eliminartodo` dice "Eliminar todos los gastos" pero sólo borra los del usuario que lo ejecuta.
 - `helpers/deleteall.js` es código muerto (todo comentado).
-- **`node-telegram-bot-api` 0.66 depende de `request`**, una librería deprecada. De ahí vienen la mayoría de las vulnerabilidades de `npm audit`, incluidas las críticas de `form-data`. Se resuelve migrando a 2.x (ver _Dependencias_).
 - Los tests sólo cubren `lib/`: los handlers y queries se verifican corriendo el bot de prueba (`npm run dev`) en Telegram. Nueva lógica pura → va en `lib/` con su test.
