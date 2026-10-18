@@ -151,6 +151,26 @@ Ejemplo: A gana 60%, B 40%. A gastó 100.000, B gastó 50.000 → A recibe 0,4×
 - No dejar variables, imports ni argumentos sin usar (ESLint falla). Si un argumento es obligatorio por la firma, prefijarlo con `_`.
 - Una función `async` tiene que tener algún `await` (`require-await`); si no lo necesita, que no sea `async`.
 
+## Flujo de trabajo
+
+### Ramas y PRs
+
+- `main` es producción y `develop` es integración. Cada tarea va en su propia rama creada desde `develop`, con prefijo de tipo (`feat/`, `fix/`, `refactor/`, `chore/`, `docs/`).
+- Las ramas de tarea se mergean a `develop` con un PR (`gh pr create --base develop`). `develop` se mergea a `main` para publicar.
+- La descripción del PR incluye un resumen, los cambios agrupados por commit, cómo se probó y lo que queda pendiente.
+
+### Commits
+
+- En español, con prefijo de tipo: `feat`, `fix`, `refactor`, `chore`, `chore(deps)`, `style`, `docs`, `test`.
+- Un commit por tipo de cambio. Los cambios de formato (`npm run format`) van en un commit `style` aparte, nunca mezclados con cambios de lógica.
+- Antes de cada commit, `npm run check` tiene que pasar. Si el cambio toca `handlers/`, `queries/` o `bot.js`, que no tienen tests, además se prueba en el bot de prueba (`npm run dev`).
+
+### Dependencias
+
+- `npm audit fix` **sin** `--force` está bien: respeta los rangos de `package.json`. Después hay que verificar con `npm run check` y probar en el bot.
+- **No usar `npm audit fix --force`.** Hace downgrade de nodemon a 1.14.10, una versión de 2018, y sube `node-telegram-bot-api` de 0.66 a 2.x, una reescritura con cambios incompatibles.
+- Las actualizaciones de versión mayor se hacen a mano, en su propia rama, después de leer el changelog.
+
 ## Problemas conocidos / deuda técnica
 
 Tenerlos en cuenta antes de modificar código cercano:
@@ -164,5 +184,6 @@ Tenerlos en cuenta antes de modificar código cercano:
 - **`totalExpenses` puede desincronizarse** de la colección Expense si falla el segundo paso de alta/baja (no hay transacciones).
 - `/eliminartodo` dice "Eliminar todos los gastos" pero sólo borra los del usuario que lo ejecuta.
 - `helpers/deleteall.js` es código muerto (todo comentado).
-- `npm start` usa `nodemon` también en producción.
+- `npm start` usa `nodemon` también en producción. Además, nodemon trae las vulnerabilidades de `chokidar`/`braces` que marca `npm audit`.
+- **`node-telegram-bot-api` 0.66 depende de `request`**, una librería deprecada. De ahí vienen la mayoría de las vulnerabilidades de `npm audit`, incluidas las críticas de `form-data`. Se resuelve migrando a 2.x (ver _Dependencias_).
 - Los tests sólo cubren `lib/`: los handlers y queries se verifican corriendo el bot de prueba (`npm run dev`) en Telegram. Nueva lógica pura → va en `lib/` con su test.
