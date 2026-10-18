@@ -4,8 +4,8 @@
   "main": "bot.js",
   "type": "module",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development nodemon bot.js",
-    "start": "cross-env NODE_ENV=production nodemon bot.js",
+    "dev": "cross-env NODE_ENV=development node --watch bot.js",
+    "start": "cross-env NODE_ENV=production node bot.js",
     "test": "node --test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -27,7 +27,6 @@
     "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.13.0",
-    "nodemon": "^3.1.9",
     "prettier": "^3.9.10"
   }
 }
