@@ -2,7 +2,8 @@ import ExpenseCollection from '../queries/expenses.js';
 import UserCollection from '../queries/users.js';
 import { sendMessage } from '../helpers/sendMessage.js';
 import { reactToMessage } from '../helpers/reactToMessage.js';
-import { bot } from '../bot.js';
+import { deleteMessage } from '../helpers/deleteMessage.js';
+import { removeInlineKeyboard } from '../helpers/removeInlineKeyboard.js';
 
 let messageToDeleteId;
 
@@ -36,34 +37,27 @@ export async function deleteAllExpenses(callbackQuery) {
 
   switch (callbackQuery.data) {
     case 'deleteall_cancel':
-      await handleDeleteCancel(callbackQuery);
+      // Cancelar: sólo se quita el teclado.
       break;
     default:
-      await handleDeleteConfirm(callbackQuery); 
+      await handleDeleteConfirm(callbackQuery);
   }
-  
-  await bot.editMessageReplyMarkup(
-    { inline_keyboard: [] },
-    { chat_id: chatId, message_id: messageId }
-  );
 
-  bot.deleteMessage(chatId, messageId);
+  await removeInlineKeyboard(chatId, messageId);
+
+  deleteMessage(chatId, messageId);
   await reactToMessage(chatId, messageToDeleteId, '👍');
 
   setTimeout(() => {
-    bot.deleteMessage(chatId, messageToDeleteId);
+    deleteMessage(chatId, messageToDeleteId);
   }, 3000);
-}
-
-async function handleDeleteCancel(callbackQuery) {
-  return;
 }
 
 async function handleDeleteConfirm(callbackQuery) {
   const chatId = callbackQuery.message.chat.id;
   const userId = callbackQuery.from.id;
 
-  const { data: rData, error: rError } = await ExpenseCollection.removeAll(userId);
+  const { error: rError } = await ExpenseCollection.removeAll(userId);
 
   if (rError) {
     await sendMessage(chatId, '❌ Ocurrió un error al eliminar los gastos.');
@@ -73,14 +67,11 @@ async function handleDeleteConfirm(callbackQuery) {
   const { error: iteError } = await UserCollection.resetUsersTotalExpenses(userId, 0);
 
   if (iteError) {
-    await sendMessage(
-      chatId,
-      `❌ Ocurrió un error al actualizar los gastos totales`,
-      { parse_mode: 'Markdown' }
-    );
+    await sendMessage(chatId, `❌ Ocurrió un error al actualizar los gastos totales`, {
+      parse_mode: 'Markdown',
+    });
     return;
   }
 
   // await reactToMessage(chatId, messageId, '👍');
 }
-

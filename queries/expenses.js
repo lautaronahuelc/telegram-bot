@@ -48,12 +48,7 @@ async function getAll(userId) {
   }
 }
 
-async function create({
-  amount,
-  desc,
-  userId,
-  username,
-}) {
+async function create({ amount, desc, userId, username }) {
   try {
     await new Expense({
       amount,

@@ -3,5 +3,7 @@ export function formatCurrency(currency) {
     style: 'currency',
     currency: 'ARS',
     maximumFractionDigits: 0,
-  }).format(currency).trim();
+  })
+    .format(currency)
+    .trim();
 }

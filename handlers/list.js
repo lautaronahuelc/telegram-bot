@@ -16,14 +16,14 @@ export async function onList(msg) {
     await sendMessage(chatId, '❌ Ocurrió un error al obtener los gastos.');
     return;
   }
-  
+
   const message = buildMessage(data);
   await sendMessage(chatId, message, { parse_mode: 'Markdown' });
 }
 
 function buildMessage(data) {
   const sortedExpenses = data.sort((a, b) => a.date - b.date);
-  
+
   const groupedExpenses = sortedExpenses.reduce((grouped, { username, amount, desc }) => {
     if (!grouped[username]) grouped[username] = [];
     grouped[username].push(formatExpenseText(amount, desc));

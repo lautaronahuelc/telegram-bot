@@ -22,46 +22,46 @@ async function getAll() {
     return {
       data,
       error: false,
-    }
+    };
   } catch (err) {
     console.error('❌ Error fetching user information:', err);
     return {
       data: null,
       error: true,
-    }
+    };
   }
 }
 
 async function getSalaries() {
   try {
-    const data = await User.find({}, {
-      salary: 1,
-      username: 1,
-      userId: 1,
-      _id: 0,
-    });
+    const data = await User.find(
+      {},
+      {
+        salary: 1,
+        username: 1,
+        userId: 1,
+        _id: 0,
+      },
+    );
     return {
       data,
       error: false,
-    }
+    };
   } catch (err) {
     console.error('❌ Error fetching salaries:', err);
     return {
       data: null,
       error: true,
-    }
+    };
   }
 }
 
 async function incrementTotalExpenses(userId, amount) {
   try {
-    const data = await User.updateOne(
-      { userId },
-      { $inc: { totalExpenses: amount } }
-    );
+    const data = await User.updateOne({ userId }, { $inc: { totalExpenses: amount } });
 
     if (data.modifiedCount === 0) return { error: true };
-    
+
     return { error: false };
   } catch (err) {
     console.error('❌ Error incrementing totalExpenses:', err);
@@ -87,11 +87,15 @@ async function resetUsersTotalExpenses(userId) {
 
 async function updateContributionPercentage(userId, newPercentage) {
   try {
-    const data = await User.findOneAndUpdate({ userId }, { contributionPercentage: newPercentage }, { new: true })
+    const data = await User.findOneAndUpdate(
+      { userId },
+      { contributionPercentage: newPercentage },
+      { new: true },
+    );
     return {
       data,
       error: false,
-    }
+    };
   } catch (err) {
     console.error('❌ Error editing contributionPercentage:', err);
     return {

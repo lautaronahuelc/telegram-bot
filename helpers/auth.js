@@ -1,16 +1,16 @@
-import { bot } from '../bot.js';
 import { envConfig } from '../config/env.js';
+import { sendMessage } from './sendMessage.js';
 
 function isAuthorized(id) {
   const allowedUsers = JSON.parse(envConfig.AUTHORIZED_USERS);
-  return allowedUsers.includes(id.toString());
+  return id !== undefined && allowedUsers.includes(id.toString());
 }
 
-export function withAuth(handler) {
-  return async (msg, match) => {
-    if (!isAuthorized(msg.from.id)) {
-      return await bot.sendMessage(msg.chat.id, '¡Lo siento! No estás autorizado para usar este bot.');
-    }
-    return handler(msg, match);
-  };
+export async function auth(ctx, next) {
+  if (isAuthorized(ctx.from?.id)) return next();
+
+  if (ctx.callbackQuery) await ctx.answerCallbackQuery();
+  if (ctx.chatId) {
+    await sendMessage(ctx.chatId, '¡Lo siento! No estás autorizado para usar este bot.');
+  }
 }
