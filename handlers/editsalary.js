@@ -1,7 +1,8 @@
-import { bot, waitingForResponse } from '../bot.js';
+import { waitingForResponse } from '../bot.js';
 import { COMMAND } from '../constants/commands.js';
 import { anyError } from '../helpers/error.js';
 import { calculateContributionPercentages } from '../lib/contribution.js';
+import { deleteMessage } from '../helpers/deleteMessage.js';
 import { reactToMessage } from '../helpers/reactToMessage.js';
 import { sendMessage } from '../helpers/sendMessage.js';
 import UserCollection from '../queries/users.js';
@@ -43,8 +44,8 @@ export async function editSalary(msg) {
   await reactToMessage(chatId, messageId, '👍');
 
   setTimeout(() => {
-    bot.api.deleteMessage({ chat_id: chatId, message_id: messageId });
-    bot.api.deleteMessage({ chat_id: chatId, message_id: messageToDeleteId });
+    deleteMessage(chatId, messageId);
+    deleteMessage(chatId, messageToDeleteId);
   }, 3000);
 }
 

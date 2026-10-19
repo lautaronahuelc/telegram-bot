@@ -1,6 +1,7 @@
-import { bot, waitingForResponse } from '../bot.js';
+import { waitingForResponse } from '../bot.js';
 import { COMMAND } from '../constants/commands.js';
 import { parseExpenseInput } from '../lib/expenseInput.js';
+import { deleteMessage } from '../helpers/deleteMessage.js';
 import { reactToMessage } from '../helpers/reactToMessage.js';
 import { sendMessage } from '../helpers/sendMessage.js';
 import ExpenseCollection from '../queries/expenses.js';
@@ -32,8 +33,8 @@ export async function addExpense(msg) {
     await reactToMessage(chatId, messageId, '🤬');
 
     setTimeout(() => {
-      bot.api.deleteMessage({ chat_id: chatId, message_id: messageId });
-      bot.api.deleteMessage({ chat_id: chatId, message_id: messageToDeleteId });
+      deleteMessage(chatId, messageId);
+      deleteMessage(chatId, messageToDeleteId);
     }, 3000);
 
     return;
@@ -64,7 +65,7 @@ export async function addExpense(msg) {
   await reactToMessage(chatId, messageId, '👍');
 
   setTimeout(() => {
-    bot.api.deleteMessage({ chat_id: chatId, message_id: messageId });
-    bot.api.deleteMessage({ chat_id: chatId, message_id: messageToDeleteId });
+    deleteMessage(chatId, messageId);
+    deleteMessage(chatId, messageToDeleteId);
   }, 3000);
 }
