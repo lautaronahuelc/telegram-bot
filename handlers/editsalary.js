@@ -43,8 +43,8 @@ export async function editSalary(msg) {
   await reactToMessage(chatId, messageId, '👍');
 
   setTimeout(() => {
-    bot.deleteMessage(chatId, messageId);
-    bot.deleteMessage(chatId, messageToDeleteId);
+    bot.api.deleteMessage({ chat_id: chatId, message_id: messageId });
+    bot.api.deleteMessage({ chat_id: chatId, message_id: messageToDeleteId });
   }, 3000);
 }
 

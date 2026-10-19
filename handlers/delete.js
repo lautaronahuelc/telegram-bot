@@ -63,16 +63,17 @@ export async function deleteExpense(callbackQuery) {
       await handleDeleteConfirm(callbackQuery);
   }
 
-  await bot.editMessageReplyMarkup(
-    { inline_keyboard: [] },
-    { chat_id: chatId, message_id: messageId },
-  );
+  await bot.api.editMessageReplyMarkup({
+    chat_id: chatId,
+    message_id: messageId,
+    reply_markup: { inline_keyboard: [] },
+  });
 
-  bot.deleteMessage(chatId, messageId);
+  bot.api.deleteMessage({ chat_id: chatId, message_id: messageId });
   await reactToMessage(chatId, messageToDeleteId, '👍');
 
   setTimeout(() => {
-    bot.deleteMessage(chatId, messageToDeleteId);
+    bot.api.deleteMessage({ chat_id: chatId, message_id: messageToDeleteId });
   }, 3000);
 }
 
