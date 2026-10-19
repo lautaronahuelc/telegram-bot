@@ -4,7 +4,7 @@ import { sendMessage } from '../helpers/sendMessage.js';
 import { formatExpenseText } from '../helpers/expenses.js';
 import { reactToMessage } from '../helpers/reactToMessage.js';
 import { deleteMessage } from '../helpers/deleteMessage.js';
-import { bot } from '../bot.js';
+import { removeInlineKeyboard } from '../helpers/removeInlineKeyboard.js';
 
 let messageToDeleteId;
 
@@ -64,11 +64,7 @@ export async function deleteExpense(callbackQuery) {
       await handleDeleteConfirm(callbackQuery);
   }
 
-  await bot.api.editMessageReplyMarkup({
-    chat_id: chatId,
-    message_id: messageId,
-    reply_markup: { inline_keyboard: [] },
-  });
+  await removeInlineKeyboard(chatId, messageId);
 
   deleteMessage(chatId, messageId);
   await reactToMessage(chatId, messageToDeleteId, '👍');
