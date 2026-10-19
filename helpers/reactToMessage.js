@@ -2,7 +2,9 @@ import { bot } from '../bot.js';
 
 export async function reactToMessage(chatId, messageId, emoji) {
   try {
-    await bot.setMessageReaction(chatId, messageId, {
+    await bot.api.setMessageReaction({
+      chat_id: chatId,
+      message_id: messageId,
       reaction: [{ type: 'emoji', emoji }],
     });
   } catch (error) {

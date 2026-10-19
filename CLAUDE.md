@@ -7,7 +7,7 @@ Toda la interfaz con el usuario está en **español (Argentina)** y los montos s
 ## Stack
 
 - **Node.js** con ES Modules (`"type": "module"`, imports con extensión `.js`)
-- **node-telegram-bot-api 1.x** en modo _polling_ (no usa webhooks). Requiere Node ≥ 18
+- **node-telegram-bot-api 2.x** (`Bot` + middleware, `bot.api.*`) en modo _polling_ (no usa webhooks). Requiere Node ≥ 18
 - **MongoDB + Mongoose**
 - **dotenv** + **cross-env** para variables de entorno. En dev, `node --watch` reinicia al cambiar archivos (sin nodemon)
 - Tests con el runner nativo `node:test`, **ESLint** (flat config) y **Prettier**. Sin TypeScript ni build: Node ejecuta el código tal cual.
@@ -70,13 +70,16 @@ queries/               Capa de acceso a datos. Envuelven Mongoose y devuelven { 
 ### Flujo de una petición
 
 ```
-Telegram ──polling──> bot.onText(regex) ──> withAuth(handler) ──> handler ──> queries/* ──> MongoDB
-                                                                     └──> sendMessage / reactToMessage
+Telegram ──polling──> bot.use(auth) ──> bot.hears(regex) ──> withMessage(handler) ──> queries/* ──> MongoDB
+                                                                   └──> sendMessage / reactToMessage / deleteMessage
 ```
 
-1. `bot.onText(commandRegex(COMMAND.X), withAuth(onX))` matchea `/x` o `/x@BotUsername` exactos.
-2. `withAuth` rechaza a quien no esté en `AUTHORIZED_USERS`.
+1. `bot.use(auth)` (`helpers/auth.js`) corre primero para todos los updates: rechaza a quien no esté en `AUTHORIZED_USERS` (responde el `answerCallbackQuery` si era un botón) y no llama a `next()`.
+2. `bot.hears(commandRegex(COMMAND.X), withMessage(onX))` matchea `/x` o `/x@BotUsername` exactos. `withMessage` le pasa al handler `ctx.message`, así los handlers siguen recibiendo el `msg` de Telegram y no el contexto.
 3. El handler llama a `queries/*` y responde con `sendMessage` (texto, a veces Markdown) o con una reacción emoji.
+4. Una excepción en un handler la captura `bot.catch` (en `bot.js`), que la loguea con `❌` y el `update_id`.
+
+**El orden de registro en `bot.js` importa**: primero `use(auth)`, después los `hears` y al final `on('message')` y `on('callback_query')`. Un `hears` que matchea no llama a `next()`, así que `on('message')` sólo recibe los mensajes que no son comandos (las respuestas de los comandos de dos pasos).
 
 ### Comandos de dos pasos (estado conversacional)
 
@@ -112,7 +115,7 @@ Tras completar una acción, los handlers borran el mensaje del comando y la resp
 
 1. Agregar la clave en `COMMAND` y la entrada en `COMMANDLIST` (`constants/commands.js`). `setMyCommands` y `/ayuda` se actualizan solos.
 2. Crear `handlers/<nombre>.js` exportando `on<Nombre>(msg)`; re-exportarlo en `handlers/index.js`.
-3. Registrarlo en `bot.js`: `bot.onText(commandRegex(COMMAND.X), withAuth(onX))`.
+3. Registrarlo en `bot.js` junto a los otros `hears`, antes de `bot.on('message')`: `bot.hears(commandRegex(COMMAND.X), withMessage(onX))`. No hace falta envolverlo con auth: ya lo cubre `bot.use(auth)`.
 4. Si necesita una respuesta de seguimiento: usar `waitingForResponse` y agregar el `case` en `handlers/message.js`.
 5. Si usa botones: elegir un prefijo de `callback_data` único y despacharlo en `handlers/callbackQuery.js`.
 
@@ -144,8 +147,9 @@ Ejemplo: A gana 60%, B 40%. A gastó 100.000, B gastó 50.000 → A recibe 0,4×
 
 - Las funciones de `queries/` nunca lanzan: devuelven `{ data, error }` y loguean con `console.error('❌ ...')`. Los handlers chequean `error` y responden con un mensaje de error en español.
 - Los mensajes de error para el usuario empiezan con `❌`.
-- Las reacciones se envían con `bot.setMessageReaction` desde `helpers/reactToMessage.js`, que nunca lanza: loguea el error y sigue (igual que `helpers/sendMessage.js`).
-- Las firmas de `node-telegram-bot-api` están en `node_modules/node-telegram-bot-api/dist/telegram.d.ts`. Consultarlas (con grep) antes de llamar a la API de Telegram con `fetch` o de asumir que un método no existe.
+- Las llamadas a Telegram que pueden fallar sin que importe pasan por helpers que nunca lanzan (loguean el error con `❌` y siguen): `helpers/sendMessage.js`, `helpers/reactToMessage.js` (`bot.api.setMessageReaction`) y `helpers/deleteMessage.js` (`bot.api.deleteMessage`). Usarlos en vez de llamar a `bot.api.*` directo, sobre todo dentro de un `setTimeout`, donde una excepción no la captura `bot.catch`.
+- Los métodos de `bot.api.*` reciben **un objeto de parámetros** en snake_case (`{ chat_id, message_id }`), no argumentos posicionales.
+- Las firmas de `node-telegram-bot-api` están en `node_modules/node-telegram-bot-api/dist/`: `core/api.d.ts` (métodos de `bot.api`), `types/schemas.d.ts` (tipos de Telegram: `Message`, `CallbackQuery`, etc.) y `core/{bot,context,longpoll,errors}.d.ts` (`Bot`, `use`/`hears`/`on`/`catch`, el contexto, el polling y los errores). Consultarlas (con grep) antes de llamar a la API de Telegram con `fetch` o de asumir que un método no existe.
 - Markdown de Telegram (legacy): cursiva con `_`, negrita con `*`.
 - Archivos de handlers en minúsculas sin separadores (`editsalary.js`, `showuserdetails.js`), salvo `deleteAll.js` y `callbackQuery.js`.
 - El formato lo define Prettier: no formatear a mano; correr `npm run format`.
@@ -180,7 +184,7 @@ Con `npm run dev`, en Telegram:
 8. `/cierre` se ve con el formato Markdown correcto.
 9. `/comando@BotUsername` en un grupo responde.
 10. Un usuario no autorizado recibe el mensaje de rechazo.
-11. Una reacción que falla (mensaje ya borrado) se loguea con `❌` y el comando termina igual.
+11. Una reacción o un borrado que falla (borrar a mano el mensaje antes de los 3 s) se loguea con `❌` y el bot sigue respondiendo.
 12. Cortar la red unos segundos: el polling loguea el error y el bot vuelve a responder.
 
 Si el cambio es acotado, alcanza con los pasos que toca más el 1.
@@ -189,7 +193,7 @@ Si el cambio es acotado, alcanza con los pasos que toca más el 1.
 
 - `npm audit fix` **sin** `--force` está bien: respeta los rangos de `package.json`. Después hay que verificar con `npm run check` y probar en el bot.
 - **No usar `npm audit fix --force`.** Puede saltar de versión mayor sin avisar.
-- `node-telegram-bot-api` queda en `^1`: la 1.x mantiene la API de `TelegramBot` (`onText`, `on`, `sendMessage(chatId, text, opts)`, etc.). La **2.x es una reescritura sin compatibilidad** (`Bot` + middleware, `bot.api.*` con un objeto de parámetros, `hears` en vez de `onText`): migrar a 2.x implica tocar `bot.js`, `helpers/` y los handlers.
+- `node-telegram-bot-api` está en `^2`. La 2.x fue una reescritura sin compatibilidad con la 1.x (`TelegramBot` + `onText` → `Bot` + middleware + `hears`, `bot.api.*` con un objeto de parámetros). Desde la **2.2.0** el error 409 (otra instancia con el mismo token) es recuperable: el polling lo reintenta en vez de cortarse. Al actualizar, revisar si conviene dejar de tratarlo como fatal en `bot.js`.
 - Las actualizaciones de versión mayor se hacen a mano, en su propia rama, después de leer el changelog.
 - Para evaluar una versión sin tocar el proyecto, trabajar en una carpeta temporal:
   - `npm view <paquete>@<versión> engines dependencies` muestra la versión de Node que pide y sus dependencias.
@@ -201,9 +205,10 @@ Si el cambio es acotado, alcanza con los pasos que toca más el 1.
 Tenerlos en cuenta antes de modificar código cercano:
 
 - **`messageToDeleteId` es una variable de módulo** en `add.js`, `delete.js`, `deleteAll.js`, `editsalary.js`: si dos usuarios usan el mismo comando a la vez, se pisa y se borra el mensaje equivocado.
-- **`list.js` y `delete.js` chequean `data.length` antes que `error`**: si la query falla (`data: null`) el handler lanza una excepción.
+- **`list.js` y `delete.js` chequean `data.length` antes que `error`**: si la query falla (`data: null`) el handler lanza una excepción. `bot.catch` la loguea y el bot sigue, pero el usuario no recibe ninguna respuesta.
 - **`editSalary` no valida el número**: `parseInt("abc")` → `NaN` se guarda como salario.
-- **Los handlers no tienen `try/catch`**: `bot.on`/`bot.onText` ignoran la promesa que devuelve el handler, así que una excepción en un handler queda como promesa rechazada sin manejar.
+- **Un 409 corta el proceso**: con la 2.1.0, si hay otra instancia corriendo con el mismo token (ej. `npm run dev` abierto dos veces), el polling falla de forma fatal y `bot.js` hace `process.exit(1)`.
+- **Los updates se procesan de a uno**: una llamada lenta o colgada (a Telegram o a Mongo) frena a todos los demás. Por eso `bot.js` baja el timeout de las llamadas a 30 s.
 - **`showuserdetails.js`** itera todas las claves del documento; un campo sin entrada en `formatValue` (ej. `__v` si el documento lo tiene) rompe el comando.
 - **`/cierre` sólo funciona bien con dos usuarios.**
 - **`totalExpenses` puede desincronizarse** de la colección Expense si falla el segundo paso de alta/baja (no hay transacciones).

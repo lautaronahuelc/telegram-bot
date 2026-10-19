@@ -2,6 +2,7 @@ import ExpenseCollection from '../queries/expenses.js';
 import UserCollection from '../queries/users.js';
 import { sendMessage } from '../helpers/sendMessage.js';
 import { reactToMessage } from '../helpers/reactToMessage.js';
+import { deleteMessage } from '../helpers/deleteMessage.js';
 import { bot } from '../bot.js';
 
 let messageToDeleteId;
@@ -42,16 +43,17 @@ export async function deleteAllExpenses(callbackQuery) {
       await handleDeleteConfirm(callbackQuery);
   }
 
-  await bot.editMessageReplyMarkup(
-    { inline_keyboard: [] },
-    { chat_id: chatId, message_id: messageId },
-  );
+  await bot.api.editMessageReplyMarkup({
+    chat_id: chatId,
+    message_id: messageId,
+    reply_markup: { inline_keyboard: [] },
+  });
 
-  bot.deleteMessage(chatId, messageId);
+  deleteMessage(chatId, messageId);
   await reactToMessage(chatId, messageToDeleteId, '👍');
 
   setTimeout(() => {
-    bot.deleteMessage(chatId, messageToDeleteId);
+    deleteMessage(chatId, messageToDeleteId);
   }, 3000);
 }
 
