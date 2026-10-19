@@ -145,6 +145,7 @@ Ejemplo: A gana 60%, B 40%. A gastó 100.000, B gastó 50.000 → A recibe 0,4×
 - Las funciones de `queries/` nunca lanzan: devuelven `{ data, error }` y loguean con `console.error('❌ ...')`. Los handlers chequean `error` y responden con un mensaje de error en español.
 - Los mensajes de error para el usuario empiezan con `❌`.
 - Las reacciones se envían con `bot.setMessageReaction` desde `helpers/reactToMessage.js`, que nunca lanza: loguea el error y sigue (igual que `helpers/sendMessage.js`).
+- Las firmas de `node-telegram-bot-api` están en `node_modules/node-telegram-bot-api/dist/telegram.d.ts`. Consultarlas (con grep) antes de llamar a la API de Telegram con `fetch` o de asumir que un método no existe.
 - Markdown de Telegram (legacy): cursiva con `_`, negrita con `*`.
 - Archivos de handlers en minúsculas sin separadores (`editsalary.js`, `showuserdetails.js`), salvo `deleteAll.js` y `callbackQuery.js`.
 - El formato lo define Prettier: no formatear a mano; correr `npm run format`.
@@ -163,7 +164,26 @@ Ejemplo: A gana 60%, B 40%. A gastó 100.000, B gastó 50.000 → A recibe 0,4×
 
 - En español, con prefijo de tipo: `feat`, `fix`, `refactor`, `chore`, `chore(deps)`, `style`, `docs`, `test`.
 - Un commit por tipo de cambio. Los cambios de formato (`npm run format`) van en un commit `style` aparte, nunca mezclados con cambios de lógica.
-- Antes de cada commit, `npm run check` tiene que pasar. Si el cambio toca `handlers/`, `queries/` o `bot.js`, que no tienen tests, además se prueba en el bot de prueba (`npm run dev`).
+- Antes de cada commit, `npm run check` tiene que pasar. Si el cambio toca `handlers/`, `helpers/`, `queries/` o `bot.js`, que no tienen tests, además se prueba en el bot de prueba (`npm run dev`) con el recorrido manual.
+
+### Recorrido manual en el bot de prueba
+
+Con `npm run dev`, en Telegram:
+
+1. Arranque sin errores en consola; al escribir `/` aparece el menú de comandos (`setMyCommands`).
+2. `/ayuda` lista los comandos.
+3. `/nuevogasto` → 👀; `5000 prueba` → 👍 y a los 3 s se borran ambos mensajes. Con `abc` → 🤬.
+4. `/vergastos` muestra el gasto agrupado por usuario.
+5. `/eliminaruno`: **Cancelar** quita el teclado (sin spinner colgado); eliminar uno → 👍, mensaje en Markdown y limpieza. Sin gastos propios → 🤔.
+6. `/eliminartodo`: **Cancelar** y **Confirmar** (`totalExpenses` queda en 0).
+7. `/editarsalario` → 👀; un número → 👍. `/verusuarios` muestra el salario y los porcentajes recalculados.
+8. `/cierre` se ve con el formato Markdown correcto.
+9. `/comando@BotUsername` en un grupo responde.
+10. Un usuario no autorizado recibe el mensaje de rechazo.
+11. Una reacción que falla (mensaje ya borrado) se loguea con `❌` y el comando termina igual.
+12. Cortar la red unos segundos: el polling loguea el error y el bot vuelve a responder.
+
+Si el cambio es acotado, alcanza con los pasos que toca más el 1.
 
 ### Dependencias
 
@@ -171,6 +191,10 @@ Ejemplo: A gana 60%, B 40%. A gastó 100.000, B gastó 50.000 → A recibe 0,4×
 - **No usar `npm audit fix --force`.** Puede saltar de versión mayor sin avisar.
 - `node-telegram-bot-api` queda en `^1`: la 1.x mantiene la API de `TelegramBot` (`onText`, `on`, `sendMessage(chatId, text, opts)`, etc.). La **2.x es una reescritura sin compatibilidad** (`Bot` + middleware, `bot.api.*` con un objeto de parámetros, `hears` en vez de `onText`): migrar a 2.x implica tocar `bot.js`, `helpers/` y los handlers.
 - Las actualizaciones de versión mayor se hacen a mano, en su propia rama, después de leer el changelog.
+- Para evaluar una versión sin tocar el proyecto, trabajar en una carpeta temporal:
+  - `npm view <paquete>@<versión> engines dependencies` muestra la versión de Node que pide y sus dependencias.
+  - `npm pack <paquete>@<versión>` y descomprimir el tarball permite leer los `.d.ts` reales, que son más confiables que el changelog.
+  - Copiar `package.json` y `package-lock.json`, correr `npm install <paquete>@<versión> --package-lock-only --ignore-scripts` y después `npm audit` muestra cómo quedaría el audit antes de instalar.
 
 ## Problemas conocidos / deuda técnica
 
