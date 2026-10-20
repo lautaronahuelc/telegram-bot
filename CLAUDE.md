@@ -215,3 +215,7 @@ Tenerlos en cuenta antes de modificar código cercano:
 - `/eliminartodo` dice "Eliminar todos los gastos" pero sólo borra los del usuario que lo ejecuta.
 - `helpers/deleteall.js` es código muerto (todo comentado).
 - Los tests sólo cubren `lib/`: los handlers y queries se verifican corriendo el bot de prueba (`npm run dev`) en Telegram. Nueva lógica pura → va en `lib/` con su test.
+
+## Roadmap
+
+- **IA (Claude):** casos de uso propuestos, prioridades y decisiones de diseño en [`docs/ia-casos-de-uso.md`](docs/ia-casos-de-uso.md). Leerlo antes de empezar cualquier trabajo con IA en el bot.
