@@ -1,6 +1,6 @@
 # Casos de uso de IA (Claude) para el bot
 
-Propuesta del 19/10/2026. **Nada de esto está implementado todavía.** Cuando se implemente un caso, marcarlo acá y documentarlo en `CLAUDE.md`.
+Propuesta del 19/10/2026. **Nada de esto está implementado todavía.** El caso 1 se probó y se pospuso (ver abajo). Cuando se implemente un caso, marcarlo acá y documentarlo en `CLAUDE.md`.
 
 ## Principios
 
@@ -11,7 +11,15 @@ Propuesta del 19/10/2026. **Nada de esto está implementado todavía.** Cuando s
 
 ## Casos de uso (en orden de prioridad)
 
-### 1. Carga de gastos en lenguaje natural — próximo a implementar
+### 1. Carga de gastos en lenguaje natural — pospuesto (24/10/2026)
+
+**Se probó y se descartó por ahora.** Se implementó en una rama (cliente de la API, validación del JSON, confirmación con botones) y no se mergeó. Motivos:
+
+- El formato `<monto> <descripción>` ya es rápido y no necesita IA: la IA suma una llamada de varios segundos (que además frena al otro usuario, porque los updates se procesan de a uno) y un toque extra de confirmación.
+- La frontera entre el formato manual y el lenguaje natural es difusa. `12 lucas super` lo toma el regex como monto 12, y arreglarlo exige reglas ad hoc en `parseExpenseInput` que, sin IA, empeoran el bot.
+- Cada gasto en texto libre manda montos y descripciones a la API para ahorrar muy poco tipeo.
+
+La IA aporta más donde el formato estructurado no llega: ver "Ideas a definir". Hay que decidir qué es realmente útil antes de volver a implementar nada. Si se retoma, la propuesta original era:
 
 `/nuevogasto` acepta textos como `12 lucas súper`, `1.500,50 farmacia`, `ayer pagué 8k de luz` o `nafta 35000`.
 
@@ -35,7 +43,16 @@ Por ejemplo "¿cuánto gastamos en delivery este mes?" o "¿quién pagó más se
 
 ### 5. Aviso de duplicados
 
-"Ya cargaste $5.000 súper hace 10 minutos, ¿es otro?". Sale casi gratis una vez hecho el caso 1.
+"Ya cargaste $5.000 súper hace 10 minutos, ¿es otro?". Sale casi gratis una vez que exista la base de IA (cliente, JSON con formato fijo, confirmación), que el caso 1 iba a armar y quedó pospuesto.
+
+### Ideas a definir
+
+Surgieron al posponer el caso 1. La IA sirve más cuando traduce un mensaje en lenguaje natural a acciones que el formato estructurado no puede expresar:
+
+- **Consultar los gastos:** "¿ya anoté la nafta?", "¿en qué fecha cargué la luz?". Se parece a los casos 4 y 5.
+- **Varias acciones en un mensaje:** ejecutar varios comandos a la vez a partir de instrucciones escritas con naturalidad.
+
+Es otra arquitectura que el caso 1 (un agente con herramientas de sólo lectura y confirmación antes de cualquier escritura). Falta decidir qué casos son realmente útiles, y recién ahí replanificar.
 
 ### Descartados
 
