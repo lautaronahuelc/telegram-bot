@@ -1,0 +1,21 @@
+app = "telegram-bot-8a380c"
+primary_region = "gru"
+
+# Sin [http_service]: el bot usa polling, no expone ningún puerto.
+
+[build]
+  dockerfile = "Dockerfile"
+
+# Una sola máquina: una segunda instancia con el mismo token da 409 y corta el bot.
+[deploy]
+  strategy = "rolling"
+  max_unavailable = 1
+
+# Si el proceso sale con error (ej. 409), reintenta hasta 10 veces y se detiene.
+[[restart]]
+  policy = "on-failure"
+  retries = 10
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

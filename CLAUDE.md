@@ -63,6 +63,8 @@ lib/                   Lógica pura sin Telegram ni Mongo: settlement.js (cierre
                        (parseo de "<monto> <desc>"), contribution.js (porcentajes)
 test/                  Tests de lib/ con node:test (`npm test`)
 eslint.config.js       Configuración de ESLint; .prettierrc.json / .prettierignore para Prettier
+Dockerfile             Imagen para producción (node:22-alpine, `node bot.js`); .dockerignore la mantiene sin .env
+fly.toml               Configuración de Fly.io (ver "Deploy")
 models/                Schemas de Mongoose (User, Expense)
 queries/               Capa de acceso a datos. Envuelven Mongoose y devuelven { data, error }
 ```
@@ -156,6 +158,40 @@ Ejemplo: A gana 60%, B 40%. A gastó 100.000, B gastó 50.000 → A recibe 0,4×
 - No dejar variables, imports ni argumentos sin usar (ESLint falla). Si un argumento es obligatorio por la firma, prefijarlo con `_`.
 - Una función `async` tiene que tener algún `await` (`require-await`); si no lo necesita, que no sea `async`.
 
+## Deploy (Fly.io)
+
+El bot de producción corre 24 h en **Fly.io**, app `telegram-bot-8a380c`, región `gru` (São Paulo). Es un _worker_: usa polling, así que no expone puertos ni tiene `[http_service]`. La base es MongoDB Atlas.
+
+### Piezas
+
+- **`Dockerfile`**: `node:22-alpine`, `NODE_ENV=production` fijo, `npm ci --omit=dev`, corre como usuario `node` y arranca con `node bot.js`. **`.dockerignore`** deja afuera `.env`, `node_modules`, `docs` y `test`.
+- **`fly.toml`**: una sola máquina `shared-cpu-1x` con 256 MB, `[deploy] strategy = "rolling"` y `[[restart]] on-failure` con 10 reintentos. Si el proceso sale con error 10 veces seguidas, la máquina se detiene.
+- **Secrets de Fly** (no hay `.env` en el servidor): `BOT_TOKEN`, `BOT_USERNAME`, `MONGO_URI` y `AUTHORIZED_USERS`, todos con los valores de **producción** (no los `_TEST`). `NODE_ENV` no se carga: lo fija el `Dockerfile`.
+- **Atlas**: el bot usa un usuario propio (`telegram-bot-prod`), distinto del personal, con rol `readWrite` sólo sobre la base de producción y restringido al cluster. Fly no tiene IP de salida fija, así que la lista de IPs de Atlas está abierta (`0.0.0.0/0`) y la protección es ese usuario con contraseña aleatoria larga. Si se quiere endurecer: IP de salida estática de Fly (de pago) y limitar Atlas a esa IP.
+
+### Comandos habituales
+
+`fly` necesita `-a telegram-bot-8a380c` si no se corre desde la carpeta del proyecto.
+
+| Qué                 | Comando                                                                                                                 |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Actualizar el bot   | `fly deploy` (con el código ya mergeado a `main`)                                                                       |
+| Ver si está andando | `fly status` y `fly logs` (en el log: `✅ MongoDB connected successfully on production.` y ningún `❌ Polling stopped`) |
+| Detener / arrancar  | `fly machine stop <id>` / `fly machine start <id>` (el id sale de `fly status`)                                         |
+| Cambiar un secret   | `fly secrets set NOMBRE=valor` (redespliega). Con `--stage` sólo lo guarda y se aplica en el próximo deploy             |
+| Listar secrets      | `fly secrets list` (muestra nombres y huella, nunca los valores)                                                        |
+
+### Puntos a tener en cuenta
+
+- **Una sola instancia con el token de producción.** Una segunda (ej. `npm start` en la PC, o `npm run dev` si `BOT_TOKEN_TEST` es el mismo token) da el 409 y el bot de Fly queda en bucle de reinicios hasta agotar los reintentos. Para desarrollar, usar siempre `npm run dev` con el bot de prueba.
+- **No escalar a más de una máquina.** El primer deploy se hizo con `fly deploy --ha=false` justamente para evitar la segunda máquina de respaldo; no usar `fly scale count` mayor a 1.
+- **Nunca pegar secrets en el chat, en issues ni en commits** (token, `MONGO_URI`, contraseña de Atlas). Se cargan con `read -rs` y `fly secrets set`. Si una contraseña o token se expone, rotarla de inmediato: usuario de Atlas → _Edit Password_; token → `/revoke` en BotFather; y actualizar el secret en Fly.
+- **`waitingForResponse` está en memoria**: un deploy o reinicio en medio de `/nuevogasto` o `/editarsalario` pierde el paso pendiente; el usuario tiene que repetir el comando.
+- **Cambiar de base o de usuario de Atlas** exige actualizar `MONGO_URI` en los secrets de Fly; el bot no lee ningún `.env` en producción.
+- **Si `fly deploy` se queda en `Waiting for depot builder...`**: esperar unos minutos, reintentar, o usar `fly deploy --depot=false`.
+- **Costo:** no hay plan gratuito para cuentas nuevas de Fly; revisar _Billing_ en el panel de vez en cuando.
+- **Cambios que afectan al deploy** (`Dockerfile`, `fly.toml`, versión de Node, variables nuevas en `config/env.js`) hay que reflejarlos acá. Una variable de entorno nueva también se carga como secret en Fly.
+
 ## Flujo de trabajo
 
 ### Ramas y PRs
@@ -207,7 +243,7 @@ Tenerlos en cuenta antes de modificar código cercano:
 - **`messageToDeleteId` es una variable de módulo** en `add.js`, `delete.js`, `deleteAll.js`, `editsalary.js`: si dos usuarios usan el mismo comando a la vez, se pisa y se borra el mensaje equivocado.
 - **`list.js` y `delete.js` chequean `data.length` antes que `error`**: si la query falla (`data: null`) el handler lanza una excepción. `bot.catch` la loguea y el bot sigue, pero el usuario no recibe ninguna respuesta.
 - **`editSalary` no valida el número**: `parseInt("abc")` → `NaN` se guarda como salario.
-- **Un 409 corta el proceso**: con la 2.1.0 (hasta que salga la 2.2.0 estable), si hay otra instancia corriendo con el mismo token (ej. `npm run dev` abierto dos veces), el polling falla de forma fatal y `bot.js` hace `process.exit(1)`.
+- **Un 409 corta el proceso**: con la 2.1.0 (hasta que salga la 2.2.0 estable), si hay otra instancia corriendo con el mismo token (ej. `npm run dev` abierto dos veces, o `npm start` en la PC con el bot de Fly activo), el polling falla de forma fatal y `bot.js` hace `process.exit(1)`. En Fly, la política de reinicio lo reintenta hasta 10 veces y después deja la máquina detenida (ver "Deploy").
 - **Los updates se procesan de a uno**: una llamada lenta o colgada (a Telegram o a Mongo) frena a todos los demás. Por eso `bot.js` baja el timeout de las llamadas a 30 s.
 - **`showuserdetails.js`** itera todas las claves del documento; un campo sin entrada en `formatValue` (ej. `__v` si el documento lo tiene) rompe el comando.
 - **`/cierre` sólo funciona bien con dos usuarios.**
